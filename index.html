@@ -69,36 +69,177 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 
 
 <main>
-  <!-- Add sections by specifying their file name, excluding the '.md' suffix. -->
   <section id="introduction" inlist="" rel="schema:hasPart" resource="#introduction">
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Introduction</h2>
 
-        <p>This is a great article on the Semantic Web <span class="references">[<a href="#ref-1">1</a>]</span>, written in Markdown.</p>
+        <p class="todo">Write proper introduction.</p>
 
-        <p>Make sure to <a href="https://www.principiae.be/book/pdfs/TM&amp;Th-2.0-summary.pdf">write your document effectively</a>!</p>
+      </div>
+</section>
 
-        <p class="todo">Write proper introduction.
-More information on snippets like this can be found on the <a href="https://github.com/rubensworks/ScholarMarkdown/wiki/Snippets">ScholarMarkdown wiki</a>.</p>
+  <section id="related-work" inlist="" rel="schema:hasPart" resource="#related-work">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Related Work</h2>
+
+        <p class="todo">Write me</p>
+
+      </div>
+</section>
+
+  <section id="background" inlist="" rel="schema:hasPart" resource="#background">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Background</h2>
+
+        <p class="todo">Write me: hexastore, indexing, dictionary-encoding, triple pattern queries.</p>
+
+      </div>
+</section>
+
+  <section id="use-case" inlist="" rel="schema:hasPart" resource="#use-case">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Use Case</h2>
+
+        <p class="todo">Alice Bob use case…
+Also give the example of triple pattern queries with quoted variables here.</p>
+
+      </div>
+</section>
+
+  <section id="approaches" inlist="" rel="schema:hasPart" resource="#approaches">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Indexing Approaches</h2>
+
+        <p>In this section, we introduce four approaches for indexing quoted triples,
+with increasing levels of complexity.
+These approaches build upon the well-established method of storing triples in different orders
+and using dictionary encoding as explained in <a href="#background">Section 3</a>.
+Our approaches only rely on changes within the dictionary mechanism,
+while the triple index itself remain unchanged.</p>
+
+        <h3 id="singular-dictionary">Singular Dictionary</h3>
+
+        <p>A straightforward way to achieve dictionary encoding of quoted triples,
+is to include quoted triples directly inside the dictionary of all other RDF terms.
+As such, quoted triples are handled in exactly the same manner as other RDF term types.
+For dictionaries that map strings to integers, this requires a mechanism to convert quoted triples into strings.
+<a href="#figure-dict-singular">Fig. 1</a> shows an example of such dictionary contents based on our use case data.</p>
+
+        <figure id="figure-dict-singular">
+<img src="img/dict-singular.svg" alt="[Singular Dictionary]" style="width: 50%" />
+<figcaption>
+            <p><span class="label">Fig. 1:</span> Plain terms and quoted triples are stored inside the same dictionary.</p>
+          </figcaption>
+</figure>
+
+        <p>Executing triple pattern queries is identical to the baseline approach as explain in <a href="#background">Section 3</a>,
+except for triple patterns containing quoted variables, such as the query <code>?person :says &lt;&lt;Violets haveColor ?color&gt;&gt;</code>.
+As this approach has no direct way of matching the <code>?color</code> variable to quoted triples,
+we are required to convert quoted triple patterns containing variables to variables,
+and perform a post-processing step to only emit those triples that match the quoted triple pattern.
+The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-singular">Algorithm 1</a>.</p>
+
+        <figure id="algorithm-query-dict-singular" class="algorithm">
+<pre><code>FUNCTION QuerySingularDict(idx, dict, tp)
+</code><code>  INPUT:
+</code><code>    idx: triple pattern index
+</code><code>    dict: singular dictionary
+</code><code>    tp: triple pattern
+</code><code>  OUTPUT:
+</code><code>    ts: sequence of triples
+</code><code>IF tp.subject.type === &#39;Quoted&#39; &amp;&amp; tp.subject contains variables
+</code><code>  s_filter = tp.subject
+</code><code>  tp.subject = new Variable()
+</code><code>IF tp.predicate.type === &#39;Quoted&#39; &amp;&amp; tp.predicate contains variables
+</code><code>  p_filter = tp.predicate
+</code><code>  tp.predicate = new Variable()
+</code><code>IF tp.object.type === &#39;Quoted&#39; &amp;&amp; tp.object contains variables
+</code><code>  o_filter = tp.object
+</code><code>  tp.object = new Variable()
+</code><code>ts = idx.find(dict.encode(tp.subject), dict.encode(tp.predicate), dict.encode(tp.object))
+</code><code>ts = ts.filter(t =&gt;
+</code><code>  (s_filter === undefined || s_filter matches t.subject) &amp;&amp;
+</code><code>  (p_filter === undefined || p_filter matches t.predicate) &amp;&amp;
+</code><code>  (o_filter === undefined || o_filter matches t.object)
+</code><code>)
+</code><code>RETURN ts</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 1:</span> Pseudocode of the algorithm for executing triple pattern queries using a singular dictionary.</p>
+          </figcaption>
+</figure>
+
+        <p>The main advantage of this approach lies in its simplicity of implementation.
+However, there are two main disadvantages:</p>
+
+        <ol>
+          <li>Storage overhead: Quoted triples with shared terms lead to a storage overhead, such as the duplicate storage of <code>:Violets</code> and <code>:haveColor</code> in <a href="#figure-dict-singular">Fig. 1</a>.</li>
+          <li>Lack of quoted triple pattern index: When executing triple pattern queries with quoted variables, there is no indexed access to matching quoted triples, which can lead to query performance issues.</li>
+        </ol>
+
+        <h3 id="quoted-triples-dictionary">Quoted Triples Dictionary</h3>
+
+        <p class="todo">Write me</p>
+
+        <figure id="figure-dict-quoted">
+<img src="img/dict-quoted.svg" alt="[Quoted Triples Dictionary]" />
+<figcaption>
+            <p><span class="label">Fig. 2:</span> Plain terms and quoted triples are stored in separate dictionaries.</p>
+          </figcaption>
+</figure>
+
+        <h3 id="referential-quoted-triples-dictionary">Referential Quoted Triples Dictionary</h3>
+
+        <p class="todo">ALSO IMPLEMENT AND TEST THIS!</p>
+
+        <p class="todo">Write me</p>
+
+        <figure id="figure-dict-quoted-referential">
+<img src="img/dict-quoted-referential.svg" alt="[Referential Quoted Triples Dictionary]" />
+<figcaption>
+            <p><span class="label">Fig. 3:</span> Plain terms and quoted triples are stored in separate dictionaries,
+where quoted triples are recursively encoded using existing dictionary encodings.</p>
+          </figcaption>
+</figure>
+
+        <h3 id="indexed-referential-quoted-triples-dictionary">Indexed Referential Quoted Triples Dictionary</h3>
+
+        <p class="todo">Write me</p>
+
+        <figure id="figure-dict-quoted-referential-indexed">
+<img src="img/dict-quoted-referential-indexed.svg" alt="[Indexed Referential Quoted Triples Dictionary]" />
+<figcaption>
+            <p><span class="label">Fig. 4:</span> Plain terms and quoted triples are stored in separate dictionaries,
+where quoted triples are recursively encoded using existing dictionary encodings,
+and indexed in a tree structure based on triple components.</p>
+          </figcaption>
+</figure>
+
+      </div>
+</section>
+
+  <section id="evaluation" inlist="" rel="schema:hasPart" resource="#evaluation">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Evaluation</h2>
+
+        <p class="todo">Write me</p>
+
+      </div>
+</section>
+
+  <section id="conclusions" inlist="" rel="schema:hasPart" resource="#conclusions">
+<div datatype="rdf:HTML" property="schema:description">
+        <h2 property="schema:name">Conclusions</h2>
+
+        <p class="todo">Write me</p>
 
       </div>
 </section>
 
 </main>
 
-<footer><section>
-<h2 id="references">References</h2>
-<dl class="references">
-  <dt id="ref-1">[1]</dt>
-  <dd resource="#semanticweb" typeof="schema:Article">Berners-Lee, T., Hendler, J., Lassila, O., others: The semantic web. Scientific American. 284, 28–37 (2001).</dd>
-</dl>
-</section>
-</footer>
+<footer></footer>
 
 </div>
-<p>&lt;/div&gt;</p>
-
-
 
 </body>
 </html>
