@@ -1,12 +1,12 @@
 ## Indexing Approaches
 {:#approaches}
 
-In this section, we introduce four approaches for indexing quoted triples.
-The first approach is a naive approach based on traditional RDF indexing,
-while the other two approaches are specifically designed for quoted triples.
-
-Say that all approaches have hexastore-like structure in common, and only dict is different.
-{:.todo}
+In this section, we introduce four approaches for indexing quoted triples,
+with increasing levels of complexity.
+These approaches build upon the well-established method of storing triples in different orders
+and using dictionary encoding as explained in [](#background).
+Our approaches only rely on changes within the dictionary mechanism,
+while the triple index itself remain unchanged.
 
 ### Singular Dictionary
 
