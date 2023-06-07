@@ -1,0 +1,38 @@
+---
+title: "In-Memory Indexing of Quoted RDF Triples"
+---
+<header markdown="1">
+# <%= @item[:title] %>
+
+{:#authors}
+- <%= person 'Ruben Taelman', 'https://www.rubensworks.net/', 'https://www.rubensworks.net/#me' %>
+- <%= person 'Ruben Verborgh', 'https://ruben.verborgh.org/', 'https://ruben.verborgh.org/profile/#me' %>
+
+{:#affiliations}
+- {:#idlab} IDLab,
+            Department of Electronics and Information Systems,
+            Ghent University – imec
+            <br />Ghent, Belgium
+			<br />E-mail: ruben.taelman@ugent.be
+
+</header>
+
+<!-- Hack to make our custom fonts load in print-mode -->
+<!-- https://stackoverflow.com/questions/39364259/chrome-print-preview-doesnt-load-media-only-print-font-face -->
+<span class='printfont1'> </span>
+<span class='printfont2'> </span>
+<span class='printfont3'> </span>
+<span class='printfont4'> </span>
+
+<div id="content">
+  <%= section 'abstract' %>
+
+<main>
+  <!-- Add sections by specifying their file name, excluding the '.md' suffix. -->
+  <%= section 'introduction' %>
+</main>
+
+<footer></footer>
+
+</div>
+</div>
