@@ -1,0 +1,23 @@
+FUNCTION QuerySingularDict(idx, dict, tp)
+  INPUT:
+    idx: triple pattern index
+    dict: singular dictionary
+    tp: triple pattern
+  OUTPUT:
+    ts: sequence of triples
+IF tp.subject.type === 'Quoted' && tp.subject contains variables
+  s_filter = tp.subject
+  tp.subject = new Variable()
+IF tp.predicate.type === 'Quoted' && tp.predicate contains variables
+  p_filter = tp.predicate
+  tp.predicate = new Variable()
+IF tp.object.type === 'Quoted' && tp.object contains variables
+  o_filter = tp.object
+  tp.object = new Variable()
+ts = idx.find(dict.encode(tp.subject), dict.encode(tp.predicate), dict.encode(tp.object))
+ts = ts.filter(t =>
+  (s_filter === undefined || s_filter matches t.subject) &&
+  (p_filter === undefined || p_filter matches t.predicate) &&
+  (o_filter === undefined || o_filter matches t.object)
+)
+RETURN ts
