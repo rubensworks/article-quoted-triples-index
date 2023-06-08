@@ -1,0 +1,22 @@
+FUNCTION IndexComponentQuotedDict(idxc, dict, term)
+  INPUT:
+    idxc: a certain triple component of a triple index
+    dict: quoted triples dictionary
+    term: a term inside a triple pattern
+matchingTerms = []
+IF term.type === 'Quoted' && term contains variables
+  FOR quotedTriple IN dict.getAllQuotedTriples()
+    IF idxc contains quotedTriple
+      matchingTerms.push(quotedTriple)
+    END
+  END
+ELSE IF term.type === 'Variable'
+  FOR key IN idxc
+    matchingTerms.push(key)
+  END
+ELSE
+  IF idxc contains term
+    matchingTerms.push(term)
+  END
+END
+RETURN keys
