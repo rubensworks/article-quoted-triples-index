@@ -34,6 +34,7 @@ The pseudo-code of this algorithm is shown in [](#algorithm-query-dict-singular)
 ````/algorithms/query-dict-singular.txt````
 <figcaption markdown="block">
 Pseudocode of the algorithm for executing triple pattern queries using a singular dictionary.
+This algorithm is a variant of `QueryIndex` from [](#algorithm-triplestoreindex-query).
 </figcaption>
 </figure>
 
@@ -69,6 +70,7 @@ The pseudo-code of this algorithm is shown in [](#algorithm-query-dict-quoted).
 ````/algorithms/query-dict-quoted.txt````
 <figcaption markdown="block">
 Pseudocode of the algorithm for finding all matching terms of a certain triple component inside an index using a quoted triples dictionary.
+This algorithm is a variant of `QueryIndexComponent` from [](#algorithm-triplestoreindexcomponent-query).
 </figcaption>
 </figure>
 
@@ -135,6 +137,7 @@ The pseudo-code of this algorithm is shown in [](#algorithm-query-dict-quoted-in
 ````/algorithms/query-dict-quoted-index.txt````
 <figcaption markdown="block">
 Pseudocode of the algorithm for finding all matching terms of a certain triple component inside an index using an indexed quoted triples dictionary.
+This algorithm is a variant of `QueryIndexComponent` from [](#algorithm-triplestoreindexcomponent-query).
 </figcaption>
 </figure>
 

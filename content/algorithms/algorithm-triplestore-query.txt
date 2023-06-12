@@ -1,0 +1,9 @@
+FUNCTION QueryStore(store, tp)
+  INPUT:
+    store: triple store
+    tp: triple pattern
+  OUTPUT:
+    ts: sequence of triples
+idx = most suitable index from store.indexes
+ts = QueryTriplePatternIndex(idx, store.dict, tp)
+RETURN ts
