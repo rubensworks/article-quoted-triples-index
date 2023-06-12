@@ -1,0 +1,20 @@
+FUNCTION QueryIndex(idx, dict, tp)
+  INPUT:
+    idx: triple pattern index
+    dict: dictionary
+    tp: triple pattern
+  OUTPUT:
+    ts: sequence of triples
+tpe = dict.encode(tp);
+FOR subject IN QueryIndexComponent(idx, dict, tpe.subject])
+  indx_s = idx[subject]
+  FOR predicate IN QueryIndexComponent(indx_s, dict, tpe.predicate])
+    indx_p = indx_s[predicate]
+    FOR object IN QueryIndexComponent(indx_p, dict, tpe.object])
+      object = indx_p[object]
+      ts.push(subject, predicate, object)
+    END
+  END
+END
+ts = 
+RETURN ts

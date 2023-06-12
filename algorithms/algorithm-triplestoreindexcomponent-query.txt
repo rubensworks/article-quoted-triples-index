@@ -1,0 +1,18 @@
+FUNCTION QueryIndexComponent(idxc, dict, term)
+  INPUT:
+    idxc: a certain triple component of a triple index
+    dict: dictionary
+    term: a term inside a triple pattern
+  OUTPUT:
+    ts: sequence of triples
+matchingTerms = []
+IF term.type === 'Variable'
+  FOR key IN idxc
+    matchingTerms.push(dict.decode(key))
+  END
+ELSE
+  IF idxc contains dict.encode(term)
+    matchingTerms.push(term)
+  END
+END
+RETURN matchingTerms

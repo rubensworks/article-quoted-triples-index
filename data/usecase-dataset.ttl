@@ -1,0 +1,3 @@
+@prefix : <http://example.org/foo> .
+:Alice :says << :Violets :haveColor :Blue   >> .
+:Bob   :says << :Violets :haveColor :Yellow >> .

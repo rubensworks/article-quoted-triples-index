@@ -11,7 +11,7 @@
   <meta name="citation_author" content="Ruben Taelman" />
   <meta name="citation_author" content="Ruben Verborgh" />
   
-  <meta name="citation_publication_date" content="2023/06/07" />
+  <meta name="citation_publication_date" content="2023/06/12" />
 </head>
 
 <body prefix="dctypes: http://purl.org/dc/dcmitype/ pimspace: http://www.w3.org/ns/pim/space# rsa: http://www.w3.org/ns/auth/rsa# cert: http://www.w3.org/ns/auth/cert# wgs: http://www.w3.org/2003/01/geo/wgs84_pos# biblio: http://purl.org/net/biblio# bibo: http://purl.org/ontology/bibo/ book: http://purl.org/NET/book/vocab# ov: http://open.vocab.org/terms/ doap: http://usefulinc.com/ns/doap# dbr: http://dbpedia.org/resource/ dbp: http://dbpedia.org/property/ sio: http://semanticscience.org/resource/ opmw: http://www.opmw.org/ontology/ deo: http://purl.org/spar/deo/ doco: http://purl.org/spar/doco/ cito: http://purl.org/spar/cito/ fabio: http://purl.org/spar/fabio/ solid: http://www.w3.org/ns/solid/terms# acl: http://www.w3.org/ns/auth/acl# dio: https://w3id.org/dio# lsc: http://linkedscience.org/lsc/ns#" typeof="schema:CreativeWork sioc:Post prov:Entity lsc:Research">
@@ -91,7 +91,134 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Background</h2>
 
-        <p class="todo">Write me: hexastore, indexing, dictionary-encoding, triple pattern queries.</p>
+        <p>Indexing is an important and well-understood element of RDF storage systems and SPARQL query engines,
+where it provides a trade-off between query execution time and storage space.
+Existing approaches are either based on existing database technologies,
+such as relational databases <span class="references">[<a href="#ref-1">1</a>]</span> or document stores <span class="references">[<a href="#ref-2">2</a>]</span>,
+or provide native support for RDF triples.
+In the context of this paper, we focus on the latter.
+We limit our discussion to the storage of RDF triples
+without considering the concept of named graphs,
+as these can be considered as fourth element in a quad-like structure,
+for which straightforward indexing approaches are possible.</p>
+
+        <h3 id="indexes-for-different-orders">Indexes for different orders</h3>
+
+        <p>A first important concept in RDF indexing is the <em>storage of triples in different orders</em>,
+which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-3">3</a>]</span> and Hexastore <span class="references">[<a href="#ref-4">4</a>]</span>.
+Given that a triple consists of
+a subject (<code>S</code>), predicate (<code>P</code>) and object (<code>O</code>),
+they both include six indexes for different triple component orders (<code>SPO</code>, <code>SOP</code>, <code>OSP</code>, <code>OPS</code>, <code>PSO</code> and <code>POS</code>).
+The presence of these indexes allows all possible triple patterns to be executed efficiently.
+For example, the triple pattern query <code>??O</code> can be answered most efficiently using the <code>OSP</code> or <code>OPS</code> indexes,
+while the query <code>S?O</code> could be answered using <code>SOP</code> and <code>OSP</code>.
+Next to triple pattern access efficiency, these orders also enable more efficient inner join processing inside query engines,
+where the highly efficient sort-merge join could for example be used for joins between triple patterns if triples are sorted in the same manner.
+RDF-3X goes a step further, and also provides six aggregated indexes (<code>SP</code>, <code>SO</code>, <code>PS</code>, <code>PO</code>, <code>OS</code>, and <code>OP</code>),
+and three one-valued indexes (<code>S</code>, <code>P</code>, and <code>O</code>).
+The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
+Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-5">5</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-6">6</a>]</span> go the different direction,
+and store fewer indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>) to focus purely on the triple pattern access efficiency.</p>
+
+        <h3 id="dictionary-encoding">Dictionary encoding</h3>
+
+        <p>A second important aspect in RDF indexing is the <em>encoding of RDF terms using dictionaries</em>.
+The main purpose of dictionary-encoding is the reduction in storage overhead if RDF terms are reused across multiple triples inside indexes.
+The dictionary itself is a datastructure that maintains a bidirectional mapping of RDF terms to their encodings.
+Instead of storing RDF terms directly inside indexes, the are first encoded into a more compact datatype, such as an integer,
+which is then stored inside the index instead.
+At query time, non-variable triple pattern terms can also be encoded, and queried inside the index.
+When returning query results, the encoded triples can be decoded using the dictionary.</p>
+
+        <p><a href="#figure-background-triplestore">Fig. 1</a> shows an illustration of the typical components inside a triplestore.
+This example store contains three indexes, with triples store in <code>SPO</code>, <code>POS</code>, and <code>OSP</code> orders in tree-like structure.
+These indexes make use of a single shared dictionary, which encodes the RDF terms inside all RDF triples stored by the indexes.</p>
+
+        <figure id="figure-background-triplestore">
+<img src="img/background-triplestore.svg" alt="[Components of a Triple Store]" />
+<figcaption>
+            <p><span class="label">Fig. 1:</span> The different components of a triplestore, containing one dictionary that is used by three indexes.</p>
+          </figcaption>
+</figure>
+
+        <h3 id="triple-pattern-queries">Triple Pattern Queries</h3>
+
+        <p>To simplify discussions involving triple pattern queries,
+we outline a traditional high-level query execution approach for triple pattern queries
+in <a href="#algorithm-triplestore-query">Algorithm 1</a>, <a href="#algorithm-triplestoreindex-query">Algorithm 2</a>, and <a href="#algorithm-triplestoreindexcomponent-query">Algorithm 3</a>.
+As shown in <a href="#algorithm-triplestore-query">Algorithm 1</a>, the first step involves determining the most suitable index for a given triple pattern query.
+For example, a <code>??O</code> query can be answered most efficiently using the <code>OSP</code> index.
+The triple pattern query is then delegated to the index,
+which is executed according to <a href="#algorithm-triplestoreindex-query">Algorithm 2</a>.
+In this step, we recursively drill down into the tree-like index by iterating over all matching terms of each triple pattern component.
+The algorithm for finding all matches for a single triple pattern component is shown in <a href="#algorithm-triplestoreindexcomponent-query">Algorithm 3</a>,
+which either returns all terms in this part of the index if the term is a variable,
+or returns the term itself if the term is inside the index if the term is not a variable.</p>
+
+        <figure id="algorithm-triplestore-query" class="algorithm">
+<pre><code>FUNCTION QueryStore(store, tp)
+</code><code>  INPUT:
+</code><code>    store: triple store
+</code><code>    tp: triple pattern
+</code><code>  OUTPUT:
+</code><code>    ts: sequence of triples
+</code><code>idx = most suitable index from store.indexes
+</code><code>ts = QueryTriplePatternIndex(idx, store.dict, tp)
+</code><code>RETURN ts</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 1:</span> Pseudocode for executing a triple pattern query over a triplestore containing one or more indexes.</p>
+          </figcaption>
+</figure>
+
+        <figure id="algorithm-triplestoreindex-query" class="algorithm">
+<pre><code>FUNCTION QueryIndex(idx, dict, tp)
+</code><code>  INPUT:
+</code><code>    idx: triple pattern index
+</code><code>    dict: dictionary
+</code><code>    tp: triple pattern
+</code><code>  OUTPUT:
+</code><code>    ts: sequence of triples
+</code><code>tpe = dict.encode(tp);
+</code><code>FOR subject IN QueryIndexComponent(idx, dict, tpe.subject])
+</code><code>  indx_s = idx[subject]
+</code><code>  FOR predicate IN QueryIndexComponent(indx_s, dict, tpe.predicate])
+</code><code>    indx_p = indx_s[predicate]
+</code><code>    FOR object IN QueryIndexComponent(indx_p, dict, tpe.object])
+</code><code>      object = indx_p[object]
+</code><code>      ts.push(subject, predicate, object)
+</code><code>    END
+</code><code>  END
+</code><code>END
+</code><code>ts = 
+</code><code>RETURN ts</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 2:</span> Pseudocode for executing a triple pattern query over an index, sorted in <code>SPO</code> order.</p>
+          </figcaption>
+</figure>
+
+        <figure id="algorithm-triplestoreindexcomponent-query" class="algorithm">
+<pre><code>FUNCTION QueryIndexComponent(idxc, dict, term)
+</code><code>  INPUT:
+</code><code>    idxc: a certain triple component of a triple index
+</code><code>    dict: dictionary
+</code><code>    term: a term inside a triple pattern
+</code><code>  OUTPUT:
+</code><code>    ts: sequence of triples
+</code><code>matchingTerms = []
+</code><code>IF term.type === &#39;Variable&#39;
+</code><code>  FOR key IN idxc
+</code><code>    matchingTerms.push(dict.decode(key))
+</code><code>  END
+</code><code>ELSE
+</code><code>  IF idxc contains dict.encode(term)
+</code><code>    matchingTerms.push(term)
+</code><code>  END
+</code><code>END
+</code><code>RETURN matchingTerms</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 3:</span> Pseudocode for finding all matches of a single triple component inside an index.</p>
+          </figcaption>
+</figure>
 
       </div>
 </section>
@@ -100,8 +227,36 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Use Case</h2>
 
-        <p class="todo">Alice Bob use case…
-Also give the example of triple pattern queries with quoted variables here.</p>
+        <p>As example use case to illustrate different indexing approaches,
+we introduce a fictional dataset containing statements from different people
+on the color of violets in <a href="#usecase-dataset">Listing 1</a>.</p>
+
+        <figure id="usecase-dataset" class="listing">
+<pre><code>@prefix : &lt;http://example.org/foo&gt; .
+</code><code>:Alice :says &lt;&lt; :Violets :haveColor :Blue   &gt;&gt; .
+</code><code>:Bob   :says &lt;&lt; :Violets :haveColor :Yellow &gt;&gt; .
+</code></pre>
+<figcaption>
+            <p><span class="label">Listing 1:</span> Turtle snippets containing statements by Alice and Bob on the color of violets.</p>
+          </figcaption>
+</figure>
+
+        <p>To find out what color each person says violets have,
+we can execute the SPARQL query from <a href="#usecase-query">Listing 2</a>.
+This query contains a variable in the subject position,
+and a variable inside the quoted triple pattern of the object position.
+For brevity in the remainder of this article, we refer to the variables inside quoted triple patterns as <em>quoted variables</em>.</p>
+
+        <figure id="usecase-query" class="listing">
+<pre><code>PREFIX : &lt;http://example.org/foo&gt;
+</code><code>SELECT ?person ?color WHERE {
+</code><code>  ?person :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; .
+</code><code>}
+</code></pre>
+<figcaption>
+            <p><span class="label">Listing 2:</span> SPARQL query to find what color each person says violets have.</p>
+          </figcaption>
+</figure>
 
       </div>
 </section>
@@ -123,12 +278,12 @@ while the triple index itself remain unchanged.</p>
 is to include quoted triples directly inside the dictionary of all other RDF terms.
 As such, quoted triples are handled in exactly the same manner as other RDF term types.
 For dictionaries that map strings to integers, this requires a mechanism to convert quoted triples into strings.
-<a href="#figure-dict-singular">Fig. 1</a> shows an example of such dictionary contents based on our use case data.</p>
+<a href="#figure-dict-singular">Fig. 2</a> shows an example of such dictionary contents based on our use case data.</p>
 
         <figure id="figure-dict-singular">
 <img src="img/dict-singular.svg" alt="[Singular Dictionary]" style="width: 50%" />
 <figcaption>
-            <p><span class="label">Fig. 1:</span> Plain terms and quoted triples are stored inside the same dictionary.</p>
+            <p><span class="label">Fig. 2:</span> Plain terms and quoted triples are stored inside the same dictionary.</p>
           </figcaption>
 </figure>
 
@@ -137,10 +292,10 @@ except for triple patterns containing quoted variables, such as the query <code>
 As this approach has no direct way of matching the <code>?color</code> variable to quoted triples,
 we are required to convert quoted triple patterns containing variables to variables,
 and perform a post-processing step to only emit those triples that match the quoted triple pattern.
-The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-singular">Algorithm 1</a>.</p>
+The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-singular">Algorithm 4</a>.</p>
 
         <figure id="algorithm-query-dict-singular" class="algorithm">
-<pre><code>FUNCTION QuerySingularDict(idx, dict, tp)
+<pre><code>FUNCTION QueryIndexSingularDict(idx, dict, tp)
 </code><code>  INPUT:
 </code><code>    idx: triple pattern index
 </code><code>    dict: singular dictionary
@@ -156,7 +311,7 @@ The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-sin
 </code><code>IF tp.object.type === &#39;Quoted&#39; &amp;&amp; tp.object contains variables
 </code><code>  o_filter = tp.object
 </code><code>  tp.object = new Variable()
-</code><code>ts = idx.find(dict.encode(tp.subject), dict.encode(tp.predicate), dict.encode(tp.object))
+</code><code>ts = QueryIndex(idx, dict, tp);
 </code><code>ts = ts.filter(t =&gt;
 </code><code>  (s_filter === undefined || s_filter matches t.subject) &amp;&amp;
 </code><code>  (p_filter === undefined || p_filter matches t.predicate) &amp;&amp;
@@ -164,55 +319,149 @@ The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-sin
 </code><code>)
 </code><code>RETURN ts</code></pre>
 <figcaption>
-            <p><span class="label">Algorithm 1:</span> Pseudocode of the algorithm for executing triple pattern queries using a singular dictionary.</p>
+            <p><span class="label">Algorithm 4:</span> Pseudocode of the algorithm for executing triple pattern queries using a singular dictionary.
+This algorithm is a variant of <code>QueryIndex</code> from <a href="#algorithm-triplestoreindex-query">Algorithm 2</a>.</p>
           </figcaption>
 </figure>
 
         <p>The main advantage of this approach lies in its simplicity of implementation.
-However, there are two main disadvantages:</p>
+However, we hypothesize two main disadvantages:</p>
 
         <ol>
-          <li>Storage overhead: Quoted triples with shared terms lead to a storage overhead, such as the duplicate storage of <code>:Violets</code> and <code>:haveColor</code> in <a href="#figure-dict-singular">Fig. 1</a>.</li>
-          <li>Lack of quoted triple pattern index: When executing triple pattern queries with quoted variables, there is no indexed access to matching quoted triples, which can lead to query performance issues.</li>
+          <li><strong>Storage overhead</strong>: Quoted triples with shared terms lead to a storage overhead, such as the duplicate storage of <code>:Violets</code> and <code>:haveColor</code> in <a href="#figure-dict-singular">Fig. 2</a>.</li>
+          <li><strong>Slow quoted triple pattern execution</strong>: When executing triple pattern queries with quoted variables, there is no indexed access to matching quoted triples, which can lead to query performance issues.</li>
         </ol>
 
         <h3 id="quoted-triples-dictionary">Quoted Triples Dictionary</h3>
 
-        <p class="todo">Write me</p>
+        <p>In an attempt to cope with the two disadvantages of the singular dictionary approach,
+we can dedicate the storage of quoted triples to a separate dictionary,
+as shown in <a href="#figure-dict-quoted">Fig. 3</a>.</p>
 
         <figure id="figure-dict-quoted">
 <img src="img/dict-quoted.svg" alt="[Quoted Triples Dictionary]" />
 <figcaption>
-            <p><span class="label">Fig. 2:</span> Plain terms and quoted triples are stored in separate dictionaries.</p>
+            <p><span class="label">Fig. 3:</span> Plain terms and quoted triples are stored in separate dictionaries.</p>
           </figcaption>
 </figure>
 
+        <p>To execute triple pattern queries in this approach, the post-processing step from the singular dictionary is not needed anymore.
+Instead, we can hook directly into the internal processing of separate triple component indexes.
+Concretely, when finding all matches of a given term inside a triple component index,
+we check if our term is a quoted triple pattern.
+If so, we perform an inner join between all quoted triple entries within the quoted triples dictionary,
+and the terms within the triple component index.
+If the triple component index is index in a hash-like manner, then this inner join can be done efficiently in a hash join manner.
+The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-quoted">Algorithm 5</a>.</p>
+
+        <figure id="algorithm-query-dict-quoted" class="algorithm">
+<pre><code>FUNCTION QueryIndexComponentQuotedDict(idxc, dict, term)
+</code><code>  INPUT:
+</code><code>    idxc: a certain triple component of a triple index
+</code><code>    dict: quoted triples dictionary
+</code><code>    term: a term inside a triple pattern
+</code><code>IF term.type === &#39;Quoted&#39; &amp;&amp; term contains variables
+</code><code>  matchingTerms = []
+</code><code>  FOR quotedTriple IN dict.getAllQuotedTriples()
+</code><code>    IF idxc contains dict.encode(quotedTriple)
+</code><code>      matchingTerms.push(quotedTriple)
+</code><code>    END
+</code><code>  RETURN matchingTerms
+</code><code>ELSE
+</code><code>  RETURN QueryIndexComponent(idxc, dict, term)
+</code><code>END
+</code><code>
+</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 5:</span> Pseudocode of the algorithm for finding all matching terms of a certain triple component inside an index using a quoted triples dictionary.
+This algorithm is a variant of <code>QueryIndexComponent</code> from <a href="#algorithm-triplestoreindexcomponent-query">Algorithm 3</a>.</p>
+          </figcaption>
+</figure>
+
+        <p>We hypothesize that this separated quoted triples dictionary will result in a lower storage overhead.
+Furthermore, we expect triple pattern execution to be faster due to the fact that a quoted triple pattern
+will only lead to matches with entries in the quoted triples dictionary,
+as opposed to <em>all</em> possible terms.
+However, as shown in <a href="#figure-dict-quoted">Fig. 3</a>, this approach can still lead to redundant storage
+if terms are shared across different quoted triples, such as <code>:Violet</code> and <code>:haveColor</code>.
+Furthermore, the join inside the component index using all quoted triples
+might become too expensive if there are many non-matching quoted triples.</p>
+
         <h3 id="referential-quoted-triples-dictionary">Referential Quoted Triples Dictionary</h3>
 
-        <p class="todo">ALSO IMPLEMENT AND TEST THIS!</p>
-
-        <p class="todo">Write me</p>
+        <p>To solve the redundant storage issue from the quoted triples dictionary approach,
+we extend upon that approach by not storing quoted triples in full,
+but by instead encoding the three components of that quoted triples,
+and using those encodings as key inside the dictionary.
+<a href="#figure-dict-quoted-referential">Fig. 4</a> illustrates an example of this approach.</p>
 
         <figure id="figure-dict-quoted-referential">
 <img src="img/dict-quoted-referential.svg" alt="[Referential Quoted Triples Dictionary]" />
 <figcaption>
-            <p><span class="label">Fig. 3:</span> Plain terms and quoted triples are stored in separate dictionaries,
+            <p><span class="label">Fig. 4:</span> Plain terms and quoted triples are stored in separate dictionaries,
 where quoted triples are recursively encoded using existing dictionary encodings.</p>
           </figcaption>
 </figure>
 
-        <h3 id="indexed-referential-quoted-triples-dictionary">Indexed Referential Quoted Triples Dictionary</h3>
+        <p>The triple pattern query algorithm is identical to the one from <a href="#algorithm-query-dict-quoted">Algorithm 5</a>,
+except for the fact that dictionary encoding and decoding will require the extra step of
+encoding and decoding of the three triple components.</p>
 
-        <p class="todo">Write me</p>
+        <p>We hypothesize that this approach will lead to lower storage usage
+due to the shared encoding of redundant terms inside quoted triples.</p>
 
-        <figure id="figure-dict-quoted-referential-indexed">
-<img src="img/dict-quoted-referential-indexed.svg" alt="[Indexed Referential Quoted Triples Dictionary]" />
+        <h3 id="indexed-quoted-triples-dictionary">Indexed Quoted Triples Dictionary</h3>
+
+        <p>The Quoted Triples Dictionary approach requires index components to join will all quoted triples,
+which may be costly for selective quoted triple patterns in the presence of many non-matching quoted triples.
+To solve this problem, we can modify the storage of our Quoted Triples Dictionary
+from a map-like structure to a tree-like structure,
+so that triple pattern matching can be done more efficiently.
+Concretely, this tree-like structure can be implemented similar to a triple index,
+but it must map to integer encodings.
+<a href="#figure-dict-quoted-referential-indexed"></a> illustrates an example of this approach.
+This example only makes use of the <code>SPO</code> order for encodings,
+but in practise multiple other collation orders may be used.</p>
+
+        <figure id="figure-dict-quoted-indexed">
+<img src="img/dict-quoted-indexed.svg" alt="[Indexed Quoted Triples Dictionary]" />
 <figcaption>
-            <p><span class="label">Fig. 4:</span> Plain terms and quoted triples are stored in separate dictionaries,
+            <p><span class="label">Fig. 5:</span> Plain terms and quoted triples are stored in separate dictionaries,
 where quoted triples are recursively encoded using existing dictionary encodings,
 and indexed in a tree structure based on triple components.</p>
           </figcaption>
 </figure>
+
+        <p>Executing triple pattern queries is very similar to the approach of the Quoted Triples Dictionary,
+with the difference that instead of joining with <em>all</em> quoted triples,
+we join with only those quoted triples that match with the current quoted triple pattern.
+The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-quoted-indexed"></a>.</p>
+
+        <figure id="algorithm-query-dict-quoted-index" class="algorithm">
+<pre><code>FUNCTION QueryIndexComponentQuotedDictIndex(idxc, dict, term)
+</code><code>  INPUT:
+</code><code>    idxc: a certain triple component of a triple index
+</code><code>    dict: quoted triples dictionary
+</code><code>    term: a term inside a triple pattern
+</code><code>IF term.type === &#39;Quoted&#39; &amp;&amp; term contains variables
+</code><code>  matchingTerms = []
+</code><code>  FOR quotedTriple IN dict.getMatchingQuotedTriples(term)
+</code><code>    IF idxc contains dict.encode(quotedTriple)
+</code><code>      matchingTerms.push(quotedTriple)
+</code><code>    END
+</code><code>  END
+</code><code>  RETURN matchingTerms
+</code><code>ELSE
+</code><code>  RETURN QueryIndexComponent(idxc, dict, term)
+</code><code>END</code></pre>
+<figcaption>
+            <p><span class="label">Algorithm 6:</span> Pseudocode of the algorithm for finding all matching terms of a certain triple component inside an index using an indexed quoted triples dictionary.
+This algorithm is a variant of <code>QueryIndexComponent</code> from <a href="#algorithm-triplestoreindexcomponent-query">Algorithm 3</a>.</p>
+          </figcaption>
+</figure>
+
+        <p>We hypothesize that this approach will speed up triple pattern query performance
+due to the higher selectivity during joins between the quoted triples dictionary and the current component index.</p>
 
       </div>
 </section>
@@ -237,9 +486,28 @@ and indexed in a tree structure based on triple components.</p>
 
 </main>
 
-<footer></footer>
+<footer><section>
+<h2 id="references">References</h2>
+<dl class="references">
+  <dt id="ref-1">[1]</dt>
+  <dd resource="#virtuoso" typeof="schema:Chapter">Erling, O., Mikhailov, I.: Virtuoso: RDF support in a native RDBMS. In: Semantic Web Information Management. pp. 501–519. Springer (2010).</dd>
+  <dt id="ref-2">[2]</dt>
+  <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
+  <dt id="ref-3">[3]</dt>
+  <dd resource="#rdf3x" typeof="schema:Article">Neumann, T., Weikum, G.: RDF-3X: a RISC-style engine for RDF. Proceedings of the VLDB Endowment. 1, 647–659 (2008).</dd>
+  <dt id="ref-4">[4]</dt>
+  <dd resource="#hexastore" typeof="schema:Article">Weiss, C., Karras, P., Bernstein, A.: Hexastore: sextuple indexing for semantic web data management. Proceedings of the VLDB Endowment. 1, 1008–1019 (2008).</dd>
+  <dt id="ref-5">[5]</dt>
+  <dd resource="http://www.websemanticsjournal.org/index.php/ps/article/view/328" typeof="schema:Article">Fernández, J.D., Martínez-Prieto, M.A., Gutiérrez, C., Polleres, A., Arias, M.: Binary RDF Representation for Publication and Exchange (HDT). Web Semantics: Science, Services and Agents on the World Wide Web. 19, 22–41 (2013).</dd>
+  <dt id="ref-6">[6]</dt>
+  <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
+</dl>
+</section>
+</footer>
 
 </div>
+
+
 
 </body>
 </html>
