@@ -11,7 +11,7 @@
   <meta name="citation_author" content="Ruben Taelman" />
   <meta name="citation_author" content="Ruben Verborgh" />
   
-  <meta name="citation_publication_date" content="2023/06/12" />
+  <meta name="citation_publication_date" content="2023/06/13" />
 </head>
 
 <body prefix="dctypes: http://purl.org/dc/dcmitype/ pimspace: http://www.w3.org/ns/pim/space# rsa: http://www.w3.org/ns/auth/rsa# cert: http://www.w3.org/ns/auth/cert# wgs: http://www.w3.org/2003/01/geo/wgs84_pos# biblio: http://purl.org/net/biblio# bibo: http://purl.org/ontology/bibo/ book: http://purl.org/NET/book/vocab# ov: http://open.vocab.org/terms/ doap: http://usefulinc.com/ns/doap# dbr: http://dbpedia.org/resource/ dbp: http://dbpedia.org/property/ sio: http://semanticscience.org/resource/ opmw: http://www.opmw.org/ontology/ deo: http://purl.org/spar/deo/ doco: http://purl.org/spar/doco/ cito: http://purl.org/spar/cito/ fabio: http://purl.org/spar/fabio/ solid: http://www.w3.org/ns/solid/terms# acl: http://www.w3.org/ns/auth/acl# dio: https://w3id.org/dio# lsc: http://linkedscience.org/lsc/ns#" typeof="schema:CreativeWork sioc:Post prov:Entity lsc:Research">
@@ -82,7 +82,21 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Related Work</h2>
 
-        <p class="todo">Write me</p>
+        <p>Given the recent nature of RDF-star and the concept of quoted triples,
+scientific literature on making use of it is limited.
+First, several use cases <span class="references">[<a href="#ref-1">1</a>, <a href="#ref-2">2</a>]</span> have been explored using quoted triples.
+Furthermore, a declarative language called <em>RML-star</em> <span class="references">[<a href="#ref-3">3</a>]</span> has been introduced that allows
+heterogeneous datasources such as CSV and JSON to be mapped into RDF datasets containing quoted triples.
+This language is an extension of the RML language <span class="references">[<a href="#ref-4">4</a>]</span>,
+and has been implemented in Morph-KGCstar <span class="references">[<a href="#ref-5">5</a>]</span>.
+Finally, two approaches <span class="references">[<a href="#ref-6">6</a>]</span> are identified to transform RDF datasets
+containing quoted triples into a property graphs model <span class="references">[<a href="#ref-7">7</a>]</span>.</p>
+
+        <p>RDF-star is however seeing wide adoption among SPARQL implementations,
+for which a full list of implementations that adhere to the RDF-star community group specification can be found on
+<a href="https://w3c.github.io/rdf-star/implementations.html">https:/​/​w3c.github.io/rdf-star/implementations.html</a>.
+Unfortunately, none of these approaches clearly document their storage and indexing approach,
+which motivates the need for this article on comparing various indexing approaches.</p>
 
       </div>
 </section>
@@ -94,7 +108,7 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
         <p>Indexing is an important and well-understood element of RDF storage systems and SPARQL query engines,
 where it provides a trade-off between query execution time and storage space.
 Existing approaches are either based on existing database technologies,
-such as relational databases <span class="references">[<a href="#ref-1">1</a>]</span> or document stores <span class="references">[<a href="#ref-2">2</a>]</span>,
+such as relational databases <span class="references">[<a href="#ref-8">8</a>]</span> or document stores <span class="references">[<a href="#ref-9">9</a>]</span>,
 or provide native support for RDF triples.
 In the context of this paper, we focus on the latter.
 We limit our discussion to the storage of RDF triples
@@ -105,7 +119,7 @@ for which straightforward indexing approaches are possible.</p>
         <h3 id="indexes-for-different-orders">Indexes for different orders</h3>
 
         <p>A first important concept in RDF indexing is the <em>storage of triples in different orders</em>,
-which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-3">3</a>]</span> and Hexastore <span class="references">[<a href="#ref-4">4</a>]</span>.
+which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-10">10</a>]</span> and Hexastore <span class="references">[<a href="#ref-11">11</a>]</span>.
 Given that a triple consists of
 a subject (<code>S</code>), predicate (<code>P</code>) and object (<code>O</code>),
 they both include six indexes for different triple component orders (<code>SPO</code>, <code>SOP</code>, <code>OSP</code>, <code>OPS</code>, <code>PSO</code> and <code>POS</code>).
@@ -117,7 +131,7 @@ where the highly efficient sort-merge join could for example be used for joins b
 RDF-3X goes a step further, and also provides six aggregated indexes (<code>SP</code>, <code>SO</code>, <code>PS</code>, <code>PO</code>, <code>OS</code>, and <code>OP</code>),
 and three one-valued indexes (<code>S</code>, <code>P</code>, and <code>O</code>).
 The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
-Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-5">5</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-6">6</a>]</span> go the different direction,
+Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-12">12</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-13">13</a>]</span> go the different direction,
 and store fewer indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>) to focus purely on the triple pattern access efficiency.</p>
 
         <h3 id="dictionary-encoding">Dictionary encoding</h3>
@@ -490,16 +504,30 @@ due to the higher selectivity during joins between the quoted triples dictionary
 <h2 id="references">References</h2>
 <dl class="references">
   <dt id="ref-1">[1]</dt>
-  <dd resource="#virtuoso" typeof="schema:Chapter">Erling, O., Mikhailov, I.: Virtuoso: RDF support in a native RDBMS. In: Semantic Web Information Management. pp. 501–519. Springer (2010).</dd>
+  <dd resource="#kasenchak2021use" typeof="schema:Article">Kasenchak, B., Lehnert, A., Loh, G.: Use case: ontologies and RDF-star for knowledge management. In: The Semantic Web: ESWC 2021 Satellite Events: Virtual Event, June 6–10, 2021, Revised Selected Papers 18. pp. 254–260. Springer (2021).</dd>
   <dt id="ref-2">[2]</dt>
-  <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
+  <dd resource="#solidsignedrdfstar" typeof="schema:Chapter">Braun, C.H.-J., Käfer, T.: Self-verifying Web Resource Representations Using Solid, RDF-Star and Signed URIs. In: The Semantic Web: ESWC 2022 Satellite Events: Hersonissos, Crete, Greece, May 29–June 2, 2022, Proceedings. pp. 138–142. Springer (2022).</dd>
   <dt id="ref-3">[3]</dt>
-  <dd resource="#rdf3x" typeof="schema:Article">Neumann, T., Weikum, G.: RDF-3X: a RISC-style engine for RDF. Proceedings of the VLDB Endowment. 1, 647–659 (2008).</dd>
+  <dd resource="#rmlstar" typeof="schema:Article">Delva, T., Arenas-Guerrero, J., Iglesias-Molina, A., Corcho, O., Chaves-Fraga, D., Dimou, A.: RML-star: A declarative mapping language for RDF-star generation. In: ISWC2021, the International Semantic Web Conference. CEUR (2021).</dd>
   <dt id="ref-4">[4]</dt>
-  <dd resource="#hexastore" typeof="schema:Article">Weiss, C., Karras, P., Bernstein, A.: Hexastore: sextuple indexing for semantic web data management. Proceedings of the VLDB Endowment. 1, 1008–1019 (2008).</dd>
+  <dd resource="#rml" typeof="schema:Article">Dimou, A., Vander Sande, M., Colpaert, P., Verborgh, R., Mannens, E., Van de Walle, R.: RML: A generic language for integrated RDF mappings of heterogeneous data. Ldow. 1184, (2014).</dd>
   <dt id="ref-5">[5]</dt>
-  <dd resource="http://www.websemanticsjournal.org/index.php/ps/article/view/328" typeof="schema:Article">Fernández, J.D., Martínez-Prieto, M.A., Gutiérrez, C., Polleres, A., Arias, M.: Binary RDF Representation for Publication and Exchange (HDT). Web Semantics: Science, Services and Agents on the World Wide Web. 19, 22–41 (2013).</dd>
+  <dd resource="#morphkgcstar" typeof="schema:Article">Arenas-Guerrero, J., Iglesias-Molina, A., Chaves-Fraga, D., Garijo, D., Corcho, O., Dimou, A.: Morph-KGCstar: Declarative generation of RDF-star graphs from heterogeneous data. Semantic Web (Under Review). (2023).</dd>
   <dt id="ref-6">[6]</dt>
+  <dd resource="#transformingrdfstarpropgraphs" typeof="schema:Article">Abuoda, G., Dell’Aglio, D., Keen, A., Hose, K.: Transforming RDF-star to Property Graphs: A Preliminary Analysis of Transformation Approaches–extended version. arXiv preprint arXiv:2210.05781. (2022).</dd>
+  <dt id="ref-7">[7]</dt>
+  <dd resource="#propertygraphs" typeof="schema:Article">Rodriguez, M.A., Neubauer, P.: Constructions from dots and lines. arXiv preprint arXiv:1006.2361. (2010).</dd>
+  <dt id="ref-8">[8]</dt>
+  <dd resource="#virtuoso" typeof="schema:Chapter">Erling, O., Mikhailov, I.: Virtuoso: RDF support in a native RDBMS. In: Semantic Web Information Management. pp. 501–519. Springer (2010).</dd>
+  <dt id="ref-9">[9]</dt>
+  <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
+  <dt id="ref-10">[10]</dt>
+  <dd resource="#rdf3x" typeof="schema:Article">Neumann, T., Weikum, G.: RDF-3X: a RISC-style engine for RDF. Proceedings of the VLDB Endowment. 1, 647–659 (2008).</dd>
+  <dt id="ref-11">[11]</dt>
+  <dd resource="#hexastore" typeof="schema:Article">Weiss, C., Karras, P., Bernstein, A.: Hexastore: sextuple indexing for semantic web data management. Proceedings of the VLDB Endowment. 1, 1008–1019 (2008).</dd>
+  <dt id="ref-12">[12]</dt>
+  <dd resource="http://www.websemanticsjournal.org/index.php/ps/article/view/328" typeof="schema:Article">Fernández, J.D., Martínez-Prieto, M.A., Gutiérrez, C., Polleres, A., Arias, M.: Binary RDF Representation for Publication and Exchange (HDT). Web Semantics: Science, Services and Agents on the World Wide Web. 19, 22–41 (2013).</dd>
+  <dt id="ref-13">[13]</dt>
   <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
 </dl>
 </section>
