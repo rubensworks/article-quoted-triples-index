@@ -11,7 +11,7 @@
   <meta name="citation_author" content="Ruben Taelman" />
   <meta name="citation_author" content="Ruben Verborgh" />
   
-  <meta name="citation_publication_date" content="2023/06/13" />
+  <meta name="citation_publication_date" content="2023/06/16" />
 </head>
 
 <body prefix="dctypes: http://purl.org/dc/dcmitype/ pimspace: http://www.w3.org/ns/pim/space# rsa: http://www.w3.org/ns/auth/rsa# cert: http://www.w3.org/ns/auth/cert# wgs: http://www.w3.org/2003/01/geo/wgs84_pos# biblio: http://purl.org/net/biblio# bibo: http://purl.org/ontology/bibo/ book: http://purl.org/NET/book/vocab# ov: http://open.vocab.org/terms/ doap: http://usefulinc.com/ns/doap# dbr: http://dbpedia.org/resource/ dbp: http://dbpedia.org/property/ sio: http://semanticscience.org/resource/ opmw: http://www.opmw.org/ontology/ deo: http://purl.org/spar/deo/ doco: http://purl.org/spar/doco/ cito: http://purl.org/spar/cito/ fabio: http://purl.org/spar/fabio/ solid: http://www.w3.org/ns/solid/terms# acl: http://www.w3.org/ns/auth/acl# dio: https://w3id.org/dio# lsc: http://linkedscience.org/lsc/ns#" typeof="schema:CreativeWork sioc:Post prov:Entity lsc:Research">
@@ -73,7 +73,38 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Introduction</h2>
 
-        <p class="todo">Write proper introduction.</p>
+        <p><a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">RDF</a> <span class="references">[<a href="#ref-1">1</a>]</span> and Property Graphs (PGs) <span class="references">[<a href="#ref-2">2</a>]</span> have been around in recent years
+as two major but diverging approaches for modeling Knowledge Graphs <span class="references">[<a href="#ref-3">3</a>]</span>.
+One of the main reasons for divergence, is the fact that PG allows datasets to contain statements about other statements, while RDF does not.
+This concept enables attaching metadata to statements, such as certainties or temporal validity.
+For example, this allows one to express <em>“Alice says that Violets are Blue.”</em>,
+where the statement statement about Violets being Blue is <em>quoted</em> inside a statement from Alice.</p>
+
+        <p>In an effort to align these incompatibilities between RDF and PGs,
+the RDF<em> <span class="references">[<a href="#ref-4">4</a>]</span> approach was introduced,
+which proposes an extension of the RDF data model and SPARQL query language with support for the concept of *quoted triples</em>.
+This approach was picked up by a <a href="https://w3c.github.io/rdf-star/">W3C community group</a>,
+and standardized in the <a property="schema:citation http://purl.org/spar/cito/cites" href="https://www.w3.org/2021/12/rdf-star.html">RDF-star and SPARQL-star community group report</a> <span class="references">[<a href="#ref-5">5</a>]</span>.
+This work is now being carried forward by the W3C RDF-star working group for standardization into the RDF 1.2 and SPARQL 1.2 recommendations.</p>
+
+        <p>Given the wide range of practical real-world applications for quoted triples,
+<a property="schema:citation http://purl.org/spar/cito/cites" href="https://w3c.github.io/rdf-star/implementations.html">many open-source and commercial RDF and SPARQL systems have already implemented parts of this approach</a> <span class="references">[<a href="#ref-6">6</a>]</span>.
+Notable are systems such as BlazeGraph, GraphDB, and Stardog,
+which offer the storage of quoted triples in their triplestore, and queryable access using SPARQL.
+Even though some approaches offer reports of their systems passing RDF-star specification tests,
+and provide high-level documentation explaining the concepts of quoted triples for end-users,
+none of them offer detailed descriptions of their indexing approach,
+or query performance evaluations over them.
+As such, there is an open knowledge gap on the research question
+<em>“How to index quoted triples, and what is the impact on ingestion, storage, and query performance?”</em>.</p>
+
+        <p>To fill this gap, we explore four different indexing approaches,
+implement them in a single system for fair comparison,
+and evaluate them in terms of ingestion time, storage size, and query performance.
+We focus on in-memory indexing, but approaches are generalizable to mixed disk/memory approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-7">7</a>]</span>.
+Like many RDF indexing approaches <span class="references">[<a href="#ref-8">8</a>, <a href="#ref-9">9</a>]</span>,
+we focus on providing indexed access for triple pattern queries,
+as these form the basis for answering full SPARQL queries.</p>
 
       </div>
 </section>
@@ -84,17 +115,19 @@ Therefore, we shown that the addition of quoted triples into the RDF stack can b
 
         <p>Given the recent nature of RDF-star and the concept of quoted triples,
 scientific literature on making use of it is limited.
-First, several use cases <span class="references">[<a href="#ref-1">1</a>, <a href="#ref-2">2</a>]</span> have been explored using quoted triples.
-Furthermore, a declarative language called <em>RML-star</em> <span class="references">[<a href="#ref-3">3</a>]</span> has been introduced that allows
+First, several use cases <span class="references">[<a href="#ref-10">10</a>, <a href="#ref-11">11</a>]</span> have been explored using quoted triples.
+Furthermore, a declarative language called <em>RML-star</em> <span class="references">[<a href="#ref-12">12</a>]</span> has been introduced that allows
 heterogeneous datasources such as CSV and JSON to be mapped into RDF datasets containing quoted triples.
-This language is an extension of the RML language <span class="references">[<a href="#ref-4">4</a>]</span>,
-and has been implemented in Morph-KGCstar <span class="references">[<a href="#ref-5">5</a>]</span>.
-Finally, two approaches <span class="references">[<a href="#ref-6">6</a>]</span> are identified to transform RDF datasets
-containing quoted triples into a property graphs model <span class="references">[<a href="#ref-7">7</a>]</span>.</p>
+This language is an extension of the RML language <span class="references">[<a href="#ref-13">13</a>]</span>,
+and has been implemented in Morph-KGCstar <span class="references">[<a href="#ref-14">14</a>]</span>.
+Similarly, RSP-QL* <span class="references">[<a href="#ref-15">15</a>]</span> was introduced as an extension to the
+RSP-QL model <span class="references">[<a href="#ref-16">16</a>]</span> for RDF Stream Processing to support quoted triples.
+Finally, two approaches <span class="references">[<a href="#ref-17">17</a>]</span> are identified to transform RDF datasets
+containing quoted triples into a property graphs model <span class="references">[<a href="#ref-2">2</a>]</span>.</p>
 
         <p>RDF-star is however seeing wide adoption among SPARQL implementations,
-for which a full list of implementations that adhere to the RDF-star community group specification can be found on
-<a href="https://w3c.github.io/rdf-star/implementations.html">https:/​/​w3c.github.io/rdf-star/implementations.html</a>.
+for which a full list of implementations that adhere to the RDF-star community group specification can be found in
+<span class="references">[<a href="#ref-6">6</a>]</span>.
 Unfortunately, none of these approaches clearly document their storage and indexing approach,
 which motivates the need for this article on comparing various indexing approaches.</p>
 
@@ -108,7 +141,7 @@ which motivates the need for this article on comparing various indexing approach
         <p>Indexing is an important and well-understood element of RDF storage systems and SPARQL query engines,
 where it provides a trade-off between query execution time and storage space.
 Existing approaches are either based on existing database technologies,
-such as relational databases <span class="references">[<a href="#ref-8">8</a>]</span> or document stores <span class="references">[<a href="#ref-9">9</a>]</span>,
+such as relational databases <span class="references">[<a href="#ref-18">18</a>]</span> or document stores <span class="references">[<a href="#ref-19">19</a>]</span>,
 or provide native support for RDF triples.
 In the context of this paper, we focus on the latter.
 We limit our discussion to the storage of RDF triples
@@ -119,7 +152,7 @@ for which straightforward indexing approaches are possible.</p>
         <h3 id="indexes-for-different-orders">Indexes for different orders</h3>
 
         <p>A first important concept in RDF indexing is the <em>storage of triples in different orders</em>,
-which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-10">10</a>]</span> and Hexastore <span class="references">[<a href="#ref-11">11</a>]</span>.
+which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-8">8</a>]</span> and Hexastore <span class="references">[<a href="#ref-9">9</a>]</span>.
 Given that a triple consists of
 a subject (<code>S</code>), predicate (<code>P</code>) and object (<code>O</code>),
 they both include six indexes for different triple component orders (<code>SPO</code>, <code>SOP</code>, <code>OSP</code>, <code>OPS</code>, <code>PSO</code> and <code>POS</code>).
@@ -131,7 +164,7 @@ where the highly efficient sort-merge join could for example be used for joins b
 RDF-3X goes a step further, and also provides six aggregated indexes (<code>SP</code>, <code>SO</code>, <code>PS</code>, <code>PO</code>, <code>OS</code>, and <code>OP</code>),
 and three one-valued indexes (<code>S</code>, <code>P</code>, and <code>O</code>).
 The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
-Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-12">12</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-13">13</a>]</span> go the different direction,
+Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-7">7</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-20">20</a>]</span> go the different direction,
 and store fewer indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>) to focus purely on the triple pattern access efficiency.</p>
 
         <h3 id="dictionary-encoding">Dictionary encoding</h3>
@@ -484,7 +517,213 @@ due to the higher selectivity during joins between the quoted triples dictionary
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Evaluation</h2>
 
-        <p class="todo">Write me</p>
+        <p>In this section, we evaluate the impact of the indexing approaches discussed in <a href="#approaches">Section 5</a>
+in terms of storage size, ingestion time, and query execution time.
+We start by discussing our implementation of the approaches,
+followed by our experimental setup, our results,
+and end with a discussion.</p>
+
+        <h3 id="implementation">Implementation</h3>
+
+        <p>To achieve a fair comparison between the different indexing approaches,
+we have implemented all approaches in the same programming language (TypeScript).
+The implementation of these approaches is open-source,
+and available on GitHub at <a href="https://github.com/rubensworks/rdf-stores.js">https:/​/​github.com/rubensworks/rdf-stores.js</a>.</p>
+
+        <h3 id="experimental-setup">Experimental Setup</h3>
+
+        <p>To measure the performance impact of different quoted triple depths,
+we create simulated datasets at various sizes.</p>
+
+        <p>Our dataset generator is based on the data model of <a href="#use-case">Section 4</a> with different people (size / 10) and colors (10),
+and allows any number of triples to be generated.
+Furthermore, it allows a <em>depth</em> parameter to be specified, which defines the number of quoted triples in object positions.
+For instance, a depth value of 1 generates quoted triples in the form of <code>?person :says &lt;&lt; :Violets :haveColor ?color &gt;&gt;</code>,
+while a depth value of 3 generated quoted triples in the form of <code>?person :says &lt;&lt; ?person :says &lt;&lt; ?person :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt; &gt;&gt;</code>.</p>
+
+        <p>For our experiments, we range the dataset from 1.000 to 1.000.000,
+with the depth ranging from 1 to 5.
+For each combination, we measure the performance of the four indexing approaches in terms of the following metrics:</p>
+
+        <ul>
+          <li><strong>Storage size</strong>: The total memory consumption after ingestion in MB.</li>
+          <li><strong>Ingestion time</strong>: The duration of ingesting the generated triples in milliseconds.</li>
+          <li><strong>Query execution time</strong>: The total duration of executing all triple pattern queries in milliseconds.</li>
+        </ul>
+
+        <p>Query execution was measured using 3 types of queries (examples assume depth 2):</p>
+
+        <ul>
+          <li><strong>Low selectivity</strong>: Query people in the form of: <code>?person :says &lt;&lt; ?person :says &lt;&lt; :Violets :haveColor :Red &gt;&gt; &gt;&gt;</code>. Each query produces size / 10 results.</li>
+          <li><strong>Medium selectivity</strong>: Query colors in the form of: <code>?person :says &lt;&lt; :Bob :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt;</code>. Each query produces 10 results.</li>
+          <li><strong>Medium selectivity</strong>: Query colors of specific people in the form of: <code>:Alice :says &lt;&lt; :Bob :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt;</code>. Each query produces 1 results.</li>
+        </ul>
+
+        <p>The 4 indexing approaches were configured with 3 indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>),
+and the indexed quoted triples dictionary was also configured with these 3 indexes.
+All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB or RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
+Our experimental setup is fully reproducible, and is available together with the raw results at
+<a href="https://github.com/rubensworks/experiments-indexing-quoted-triples">https:/​/​github.com/rubensworks/experiments-indexing-quoted-triples</a>.</p>
+
+        <h3 id="results">Results</h3>
+
+        <p><a href="#figure-results-ingest-size">Fig. 6</a> and <a href="#figure-results-ingest-time">Fig. 7</a> respectively show the storage sizes and ingestion times
+for the different indexing approaches.
+<a href="#figure-results-query-low">Fig. 8</a>, <a href="#figure-results-query-med">Fig. 9</a>, and <a href="#figure-results-query-high">Fig. 10</a>
+respectively show the query execution times for low, medium, and high selectivity queries.
+We omit results for quoted triple depths that do not provide additional insights aside from the highest and lowest values.
+To show an overview of all storage sizes, all figures are logarithmic in both axes.</p>
+
+        <figure id="figure-results-ingest-size" class="results-sidebyside">
+
+<figure id="figure-results-ingest-size-1" class="subfigure">
+<img src="img/experiments/results-ingest-size-1.svg" alt="Storage sizes depth 1" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 6.1:</span> Depth 1</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-ingest-size-5" class="subfigure">
+<img src="img/experiments/results-ingest-size-5.svg" alt="Storage sizes depth 5" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 6.2:</span> Depth 5</p>
+            </figcaption>
+</figure>
+
+<figcaption>
+            <p><span class="label">Fig. 6:</span> Storage sizes for the 4 indexing approaches with increasing dataset sizes.</p>
+          </figcaption>
+</figure>
+
+        <figure id="figure-results-ingest-time" class="results-sidebyside">
+
+<figure id="figure-results-ingest-time-1" class="subfigure">
+<img src="img/experiments/results-ingest-time-1.svg" alt="Ingestion times depth 1" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 7.1:</span> Depth 1</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-ingest-time-5" class="subfigure">
+<img src="img/experiments/results-ingest-time-5.svg" alt="Ingestion times depth 5" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 7.2:</span> Depth 5</p>
+            </figcaption>
+</figure>
+
+<figcaption>
+            <p><span class="label">Fig. 7:</span> Ingestion times for the 4 indexing approaches with increasing dataset sizes.</p>
+          </figcaption>
+</figure>
+
+        <figure id="figure-results-query-low" class="results-sidebyside">
+
+<figure id="figure-results-query-low-1" class="subfigure">
+<img src="img/experiments/results-query-low-1.svg" alt="Query times depth 1" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 8.1:</span> Depth 1</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-low-3" class="subfigure">
+<img src="img/experiments/results-query-low-3.svg" alt="Query times depth 3" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 8.2:</span> Depth 3</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-low-4" class="subfigure">
+<img src="img/experiments/results-query-low-4.svg" alt="Query times depth 4" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 8.3:</span> Depth 4</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-low-5" class="subfigure">
+<img src="img/experiments/results-query-low-5.svg" alt="Query times depth 5" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 8.4:</span> Depth 5</p>
+            </figcaption>
+</figure>
+
+<figcaption>
+            <p><span class="label">Fig. 8:</span> Query execution times for the 4 indexing approaches with increasing dataset sizes with low result selectivity.</p>
+          </figcaption>
+</figure>
+
+        <figure id="figure-results-query-med" class="results-sidebyside">
+
+<figure id="figure-results-query-med-1" class="subfigure">
+<img src="img/experiments/results-query-med-1.svg" alt="Query times depth 1" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 9.1:</span> Depth 1</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-med-3" class="subfigure">
+<img src="img/experiments/results-query-med-3.svg" alt="Query times depth 3" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 9.2:</span> Depth 3</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-med-4" class="subfigure">
+<img src="img/experiments/results-query-med-4.svg" alt="Query times depth 4" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 9.3:</span> Depth 4</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-med-5" class="subfigure">
+<img src="img/experiments/results-query-med-5.svg" alt="Query times depth 5" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 9.4:</span> Depth 5</p>
+            </figcaption>
+</figure>
+
+<figcaption>
+            <p><span class="label">Fig. 9:</span> Query execution times for the 4 indexing approaches with increasing dataset sizes with medium result selectivity.</p>
+          </figcaption>
+</figure>
+
+        <figure id="figure-results-query-high" class="results-sidebyside">
+
+<figure id="figure-results-query-high-1" class="subfigure">
+<img src="img/experiments/results-query-high-1.svg" alt="Query times depth 1" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 10.1:</span> Depth 1</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-high-3" class="subfigure">
+<img src="img/experiments/results-query-high-3.svg" alt="Query times depth 3" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 10.2:</span> Depth 3</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-high-4" class="subfigure">
+<img src="img/experiments/results-query-high-4.svg" alt="Query times depth 4" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 10.3:</span> Depth 4</p>
+            </figcaption>
+</figure>
+
+<figure id="figure-results-query-high-5" class="subfigure">
+<img src="img/experiments/results-query-high-5.svg" alt="Query times depth 5" />
+<figcaption class="for-subfigure">
+              <p><span class="label">Subfig. 10.4:</span> Depth 5</p>
+            </figcaption>
+</figure>
+
+<figcaption>
+            <p><span class="label">Fig. 10:</span> Query execution times for the 4 indexing approaches with increasing dataset sizes with high result selectivity.</p>
+          </figcaption>
+</figure>
+
+        <h3 id="discussion">Discussion</h3>
+
+        <p class="todo">Analyze results</p>
 
       </div>
 </section>
@@ -504,30 +743,44 @@ due to the higher selectivity during joins between the quoted triples dictionary
 <h2 id="references">References</h2>
 <dl class="references">
   <dt id="ref-1">[1]</dt>
-  <dd resource="#kasenchak2021use" typeof="schema:Article">Kasenchak, B., Lehnert, A., Loh, G.: Use case: ontologies and RDF-star for knowledge management. In: The Semantic Web: ESWC 2021 Satellite Events: Virtual Event, June 6–10, 2021, Revised Selected Papers 18. pp. 254–260. Springer (2021).</dd>
+  <dd resource="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/" typeof="schema:CreativeWork">Cyganiak, R., Wood, D., Lanthaler, M.: \rdf 1.1: Concepts and Abstract Syntax. W3C, <a href="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">http:/​/​www.w3.org/TR/2014/REC-rdf11-concepts-20140225/</a> (2014).</dd>
   <dt id="ref-2">[2]</dt>
-  <dd resource="#solidsignedrdfstar" typeof="schema:Chapter">Braun, C.H.-J., Käfer, T.: Self-verifying Web Resource Representations Using Solid, RDF-Star and Signed URIs. In: The Semantic Web: ESWC 2022 Satellite Events: Hersonissos, Crete, Greece, May 29–June 2, 2022, Proceedings. pp. 138–142. Springer (2022).</dd>
-  <dt id="ref-3">[3]</dt>
-  <dd resource="#rmlstar" typeof="schema:Article">Delva, T., Arenas-Guerrero, J., Iglesias-Molina, A., Corcho, O., Chaves-Fraga, D., Dimou, A.: RML-star: A declarative mapping language for RDF-star generation. In: ISWC2021, the International Semantic Web Conference. CEUR (2021).</dd>
-  <dt id="ref-4">[4]</dt>
-  <dd resource="#rml" typeof="schema:Article">Dimou, A., Vander Sande, M., Colpaert, P., Verborgh, R., Mannens, E., Van de Walle, R.: RML: A generic language for integrated RDF mappings of heterogeneous data. Ldow. 1184, (2014).</dd>
-  <dt id="ref-5">[5]</dt>
-  <dd resource="#morphkgcstar" typeof="schema:Article">Arenas-Guerrero, J., Iglesias-Molina, A., Chaves-Fraga, D., Garijo, D., Corcho, O., Dimou, A.: Morph-KGCstar: Declarative generation of RDF-star graphs from heterogeneous data. Semantic Web (Under Review). (2023).</dd>
-  <dt id="ref-6">[6]</dt>
-  <dd resource="#transformingrdfstarpropgraphs" typeof="schema:Article">Abuoda, G., Dell’Aglio, D., Keen, A., Hose, K.: Transforming RDF-star to Property Graphs: A Preliminary Analysis of Transformation Approaches–extended version. arXiv preprint arXiv:2210.05781. (2022).</dd>
-  <dt id="ref-7">[7]</dt>
   <dd resource="#propertygraphs" typeof="schema:Article">Rodriguez, M.A., Neubauer, P.: Constructions from dots and lines. arXiv preprint arXiv:1006.2361. (2010).</dd>
-  <dt id="ref-8">[8]</dt>
-  <dd resource="#virtuoso" typeof="schema:Chapter">Erling, O., Mikhailov, I.: Virtuoso: RDF support in a native RDBMS. In: Semantic Web Information Management. pp. 501–519. Springer (2010).</dd>
-  <dt id="ref-9">[9]</dt>
-  <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
-  <dt id="ref-10">[10]</dt>
-  <dd resource="#rdf3x" typeof="schema:Article">Neumann, T., Weikum, G.: RDF-3X: a RISC-style engine for RDF. Proceedings of the VLDB Endowment. 1, 647–659 (2008).</dd>
-  <dt id="ref-11">[11]</dt>
-  <dd resource="#hexastore" typeof="schema:Article">Weiss, C., Karras, P., Bernstein, A.: Hexastore: sextuple indexing for semantic web data management. Proceedings of the VLDB Endowment. 1, 1008–1019 (2008).</dd>
-  <dt id="ref-12">[12]</dt>
+  <dt id="ref-3">[3]</dt>
+  <dd resource="#knowledgegraphs" typeof="schema:Article">Hogan, A., Blomqvist, E., Cochez, M., d’Amato, C., Melo, G.de, Gutierrez, C., Kirrane, S., Gayo, J.E.L., Navigli, R., Neumaier, S., others: Knowledge graphs. ACM Computing Surveys (CSUR). 54, 1–37 (2021).</dd>
+  <dt id="ref-4">[4]</dt>
+  <dd resource="#rdfstar" typeof="schema:Article">Hartig, O.: Foundations of RDF* and SPARQL*:(An alternative approach to statement-level metadata in RDF). In: AMW 2017 11th Alberto Mendelzon International Workshop on Foundations of Data Management and the Web, Montevideo, Uruguay, June 7-9, 2017. Juan Reutter, Divesh Srivastava (2017).</dd>
+  <dt id="ref-5">[5]</dt>
+  <dd resource="https://www.w3.org/2021/12/rdf-star.html" typeof="schema:CreativeWork">\RDF-star and SPARQL-star. W3C, <a href="https://www.w3.org/2021/12/rdf-star.html">https:/​/​www.w3.org/2021/12/rdf-star.html</a> (2021).</dd>
+  <dt id="ref-6">[6]</dt>
+  <dd resource="https://w3c.github.io/rdf-star/implementations.html" typeof="schema:CreativeWork">Group, R.D.F.-star W.C.C.: RDF-star Implementations. <a href="https://w3c.github.io/rdf-star/implementations.html">https:/​/​w3c.github.io/rdf-star/implementations.html</a> (2023).</dd>
+  <dt id="ref-7">[7]</dt>
   <dd resource="http://www.websemanticsjournal.org/index.php/ps/article/view/328" typeof="schema:Article">Fernández, J.D., Martínez-Prieto, M.A., Gutiérrez, C., Polleres, A., Arias, M.: Binary RDF Representation for Publication and Exchange (HDT). Web Semantics: Science, Services and Agents on the World Wide Web. 19, 22–41 (2013).</dd>
+  <dt id="ref-8">[8]</dt>
+  <dd resource="#rdf3x" typeof="schema:Article">Neumann, T., Weikum, G.: RDF-3X: a RISC-style engine for RDF. Proceedings of the VLDB Endowment. 1, 647–659 (2008).</dd>
+  <dt id="ref-9">[9]</dt>
+  <dd resource="#hexastore" typeof="schema:Article">Weiss, C., Karras, P., Bernstein, A.: Hexastore: sextuple indexing for semantic web data management. Proceedings of the VLDB Endowment. 1, 1008–1019 (2008).</dd>
+  <dt id="ref-10">[10]</dt>
+  <dd resource="#kasenchak2021use" typeof="schema:Article">Kasenchak, B., Lehnert, A., Loh, G.: Use case: ontologies and RDF-star for knowledge management. In: The Semantic Web: ESWC 2021 Satellite Events: Virtual Event, June 6–10, 2021, Revised Selected Papers 18. pp. 254–260. Springer (2021).</dd>
+  <dt id="ref-11">[11]</dt>
+  <dd resource="#solidsignedrdfstar" typeof="schema:Chapter">Braun, C.H.-J., Käfer, T.: Self-verifying Web Resource Representations Using Solid, RDF-Star and Signed URIs. In: The Semantic Web: ESWC 2022 Satellite Events: Hersonissos, Crete, Greece, May 29–June 2, 2022, Proceedings. pp. 138–142. Springer (2022).</dd>
+  <dt id="ref-12">[12]</dt>
+  <dd resource="#rmlstar" typeof="schema:Article">Delva, T., Arenas-Guerrero, J., Iglesias-Molina, A., Corcho, O., Chaves-Fraga, D., Dimou, A.: RML-star: A declarative mapping language for RDF-star generation. In: ISWC2021, the International Semantic Web Conference. CEUR (2021).</dd>
   <dt id="ref-13">[13]</dt>
+  <dd resource="#rml" typeof="schema:Article">Dimou, A., Vander Sande, M., Colpaert, P., Verborgh, R., Mannens, E., Van de Walle, R.: RML: A generic language for integrated RDF mappings of heterogeneous data. Ldow. 1184, (2014).</dd>
+  <dt id="ref-14">[14]</dt>
+  <dd resource="#morphkgcstar" typeof="schema:Article">Arenas-Guerrero, J., Iglesias-Molina, A., Chaves-Fraga, D., Garijo, D., Corcho, O., Dimou, A.: Morph-KGCstar: Declarative generation of RDF-star graphs from heterogeneous data. Semantic Web (Under Review). (2023).</dd>
+  <dt id="ref-15">[15]</dt>
+  <dd resource="#rspqlstar" typeof="schema:Article">Keskisärkkä, R., Blomqvist, E., Lind, L., Hartig, O.: RSP-QL: Enabling Statement-Level Annotations in RDF Streams. In: Semantic Systems. The Power of AI and Knowledge Graphs: 15th International Conference, SEMANTiCS 2019, Karlsruhe, Germany, September 9–12, 2019, Proceedings. pp. 140–155. Springer (2019).</dd>
+  <dt id="ref-16">[16]</dt>
+  <dd resource="#rspql" typeof="schema:Article">Dell’Aglio, D., Della Valle, E., Calbimonte, J.-P., Corcho, O.: RSP-QL semantics: A unifying query model to explain heterogeneity of RDF stream processing systems. International Journal on Semantic Web and Information Systems (IJSWIS). 10, 17–44 (2014).</dd>
+  <dt id="ref-17">[17]</dt>
+  <dd resource="#transformingrdfstarpropgraphs" typeof="schema:Article">Abuoda, G., Dell’Aglio, D., Keen, A., Hose, K.: Transforming RDF-star to Property Graphs: A Preliminary Analysis of Transformation Approaches–extended version. arXiv preprint arXiv:2210.05781. (2022).</dd>
+  <dt id="ref-18">[18]</dt>
+  <dd resource="#virtuoso" typeof="schema:Chapter">Erling, O., Mikhailov, I.: Virtuoso: RDF support in a native RDBMS. In: Semantic Web Information Management. pp. 501–519. Springer (2010).</dd>
+  <dt id="ref-19">[19]</dt>
+  <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
+  <dt id="ref-20">[20]</dt>
   <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
 </dl>
 </section>
