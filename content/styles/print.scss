@@ -7,3 +7,12 @@ header {
     display: none;
   }
 }
+
+.results-sidebyside {
+  .subfigure {
+    float: left;
+    img {
+      width: 320px;
+    }
+  }
+}

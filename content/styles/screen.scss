@@ -403,5 +403,14 @@ ol.index-entries {
   display: none;
 }
 
+.results-sidebyside {
+  .subfigure {
+    float: left;
+    img {
+      width: 290px;
+    }
+  }
+}
+
 @import "shared.scss";
 @import "shared_override.scss";
