@@ -11,7 +11,7 @@
   <meta name="citation_author" content="Ruben Taelman" />
   <meta name="citation_author" content="Ruben Verborgh" />
   
-  <meta name="citation_publication_date" content="2023/06/16" />
+  <meta name="citation_publication_date" content="2023/06/19" />
 </head>
 
 <body prefix="dctypes: http://purl.org/dc/dcmitype/ pimspace: http://www.w3.org/ns/pim/space# rsa: http://www.w3.org/ns/auth/rsa# cert: http://www.w3.org/ns/auth/cert# wgs: http://www.w3.org/2003/01/geo/wgs84_pos# biblio: http://purl.org/net/biblio# bibo: http://purl.org/ontology/bibo/ book: http://purl.org/NET/book/vocab# ov: http://open.vocab.org/terms/ doap: http://usefulinc.com/ns/doap# dbr: http://dbpedia.org/resource/ dbp: http://dbpedia.org/property/ sio: http://semanticscience.org/resource/ opmw: http://www.opmw.org/ontology/ deo: http://purl.org/spar/deo/ doco: http://purl.org/spar/doco/ cito: http://purl.org/spar/cito/ fabio: http://purl.org/spar/fabio/ solid: http://www.w3.org/ns/solid/terms# acl: http://www.w3.org/ns/auth/acl# dio: https://w3id.org/dio# lsc: http://linkedscience.org/lsc/ns#" typeof="schema:CreativeWork sioc:Post prov:Entity lsc:Research">
@@ -556,7 +556,7 @@ For each combination, we measure the performance of the four indexing approaches
         <ul>
           <li><strong>Low selectivity</strong>: Query people in the form of: <code>?person :says &lt;&lt; ?person :says &lt;&lt; :Violets :haveColor :Red &gt;&gt; &gt;&gt;</code>. Each query produces size / 10 results.</li>
           <li><strong>Medium selectivity</strong>: Query colors in the form of: <code>?person :says &lt;&lt; :Bob :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt;</code>. Each query produces 10 results.</li>
-          <li><strong>Medium selectivity</strong>: Query colors of specific people in the form of: <code>:Alice :says &lt;&lt; :Bob :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt;</code>. Each query produces 1 results.</li>
+          <li><strong>High selectivity</strong>: Query colors of specific people in the form of: <code>:Alice :says &lt;&lt; :Bob :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt;</code>. Each query produces 1 results.</li>
         </ul>
 
         <p>The 4 indexing approaches were configured with 3 indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>),
@@ -723,8 +723,33 @@ To show an overview of all storage sizes, all figures are logarithmic in both ax
 
         <h3 id="discussion">Discussion</h3>
 
-        <p class="todo">Analyze results</p>
+        <h4 id="storage-size">Storage size</h4>
 
+        <p>Our results from <a href="#figure-results-ingest-size">Fig. 6</a> show that in terms of storage size,
+the singular dictionary and referential quoted dictionary approaches perform the best.
+The quoted dictionary and indexed quoted dictionary approaches on the other hand require significantly more memory.
+Contrary to what we hypothesized in <a href="#approaches">Section 5</a>, the storage overhead of the singular dictionary for terms inside quoted triples
+is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted dictionary are minimal.
+The indexed quoted dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.</p>
+
+        <h4 id="ingestion-time">Ingestion time</h4>
+
+        <p>As expected, we observe similar results in terms of ingestion time in <a href="#figure-results-ingest-time">Fig. 7</a>,
+where the singular dictionary and quoted dictionary are significantly faster than the referential and indexed quoted dictionary approaches.
+These approaches are faster due to their simpler encoding approach,
+whereas the referential and indexed quoted dictionary approaches simply require more operations during triple encoding.</p>
+
+        <h4 id="query-execution-time">Query execution time</h4>
+
+        <p>The results in <a href="#figure-results-query-low">Fig. 8</a>, <a href="#figure-results-query-med">Fig. 9</a>, and <a href="#figure-results-query-high">Fig. 10</a>
+show that on average, the indexed quoted dictionary approach outperforms all other approaches.
+This is most significant for triple patterns with medium selectivity due to the fact that this approach
+has indexes corresponding exactly to these queries, while the other approaches require iteration over all quoted triples.
+For triple patterns with low selectivity, the difference is smaller, but the indexed quoted dictionary approach is still faster overall.
+The difference for triple patterns with high selectivity is minimal,
+as the overhead of execution time of fetching the single query result
+lies not in the index lookup, but in the other aspects of the triplestore implementation,
+such as dictionary encoding of triple patterns.</p>
       </div>
 </section>
 
@@ -732,7 +757,32 @@ To show an overview of all storage sizes, all figures are logarithmic in both ax
 <div datatype="rdf:HTML" property="schema:description">
         <h2 property="schema:name">Conclusions</h2>
 
-        <p class="todo">Write me</p>
+        <p>In this article, we discussed four approaches for the in-memory indexing of quoted triples,
+ranging from very naive to highly optimized for quoted triple pattern access.</p>
+
+        <p>Our results show that the indexed quoted dictionary approach is orders of magnitude faster than other indexing approaches.
+In the most extreme case, this approach is over 4.000 to 11.000 times faster than other indexing approaches
+for a dataset size of 1 million with quoted triples at depth 5.
+For smaller dataset sizes, lower quoted triple depths, and other types of queries, the difference becomes smaller.
+This significant speedup at query time comes with the expected cost of increased storage size and ingestion time,
+which is approximately two-fold for a large dataset.</p>
+
+        <p>As such, for use cases where quoted triple pattern queries occur at any depth,
+and the storage size and ingestion time costs are acceptable,
+the indexed quoted dictionary approach is highly beneficial for achieving good query performance.
+Furthermore, given the fact that this approach stores quoted triple terms separate from all other terms inside the dictionary,
+there is no significant overhead of using such a dictionary by default in triplestores,
+even if the properties of datasets that are to be ingested are unknown beforehand.</p>
+
+        <p>In future work, there is a need to evaluate the performance of different indexing approaches over real-world data,
+as we only evaluated performance over a custom generated dataset, which does not capture the properties of the real-world <span class="references">[<a href="#ref-21">21</a>]</span>.
+Furthermore, we wish to evaluate the performance of these indexes within full SPARQL queries
+by plugging them into <a property="schema:citation http://purl.org/spar/cito/cites" href="https://comunica.github.io/Article-ISWC2018-Resource/">SPARQL query engines</a> <span class="references">[<a href="#ref-22">22</a>]</span>.</p>
+
+        <p>In conclusion, the outcomes of this work show that the addition of the concept of quoted triples into the RDF and SPARQL recommendations
+necessitates changes in triplestores in terms of indexing and dictionary encoding,
+but that approaches such as the indexed quoted dictionary are able to provide very good performance,
+while not requiring overly complicated additions implementation-wise.</p>
 
       </div>
 </section>
@@ -782,6 +832,10 @@ To show an overview of all storage sizes, all figures are logarithmic in both ax
   <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
   <dt id="ref-20">[20]</dt>
   <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
+  <dt id="ref-21">[21]</dt>
+  <dd resource="#duan2011apples" typeof="schema:Article">Duan, S., Kementsietsidis, A., Srinivas, K., Udrea, O.: Apples and oranges: a comparison of RDF benchmarks and real RDF datasets. In: Proceedings of the 2011 ACM SIGMOD International Conference on Management of data. pp. 145–156 (2011).</dd>
+  <dt id="ref-22">[22]</dt>
+  <dd resource="https://comunica.github.io/Article-ISWC2018-Resource/" typeof="schema:Article">Taelman, R., Van Herwegen, J., Vander Sande, M., Verborgh, R.: Comunica: a Modular SPARQL Query Engine for the Web. In: Proceedings of the 17th International Semantic Web Conference (2018).</dd>
 </dl>
 </section>
 </footer>
