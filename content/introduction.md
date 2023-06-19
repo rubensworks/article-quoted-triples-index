@@ -1,21 +1,21 @@
 ## Introduction
 {:#introduction}
 
-[RDF](cite:cites spec:rdf) and [Property Graphs (PGs)](cite:cites propertygraphs) have been around in recent years
+[RDF](cite:cites spec:rdf) and [Labeled Property Graphs (LPGs)](cite:cites propertygraphs) have been around in recent years
 as two major but diverging approaches for modeling [Knowledge Graphs](cite:cites knowledgegraphs).
-One of the main reasons for divergence, is the fact that PG allows datasets to contain statements about other statements, while RDF does not.
+One of the main reasons for divergence, is the fact that LPGs allow datasets to contain statements about other statements, while RDF does not.
 This concept enables attaching metadata to statements, such as certainties or temporal validity.
-For example, this allows one to express _"Alice says that Violets are Blue."_,
+For example, it allows one to express _"Alice says that Violets are Blue."_,
 where the statement statement about Violets being Blue is *quoted* inside a statement from Alice.
 
-In an effort to align these incompatibilities between RDF and PGs,
+In an effort to align these incompatibilities between RDF and LPGs,
 the [RDF*](cite:cites rdfstar) approach was introduced,
 which proposes an extension of the RDF data model and SPARQL query language with support for the concept of *quoted triples*.
 This approach was picked up by a [W3C community group](https://w3c.github.io/rdf-star/),
 and standardized in the [RDF-star and SPARQL-star community group report](cite:cites spec:rdfstar).
 This work is now being carried forward by the W3C RDF-star working group for standardization into the RDF 1.2 and SPARQL 1.2 recommendations.
 
-Given the wide range of practical real-world applications for quoted triples,
+Given the [wide range of practical real-world applications](cite:cites kasenchak2021use, solidsignedrdfstar) for quoted triples,
 [many open-source and commercial RDF and SPARQL systems have already implemented parts of this approach](cite:cites rdfstarimplementations).
 Notable are systems such as BlazeGraph, GraphDB, and Stardog,
 which offer the storage of quoted triples in their triplestore, and queryable access using SPARQL.

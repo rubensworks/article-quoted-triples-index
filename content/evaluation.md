@@ -4,21 +4,20 @@
 In this section, we evaluate the impact of the indexing approaches discussed in [](#approaches)
 in terms of storage size, ingestion time, and query execution time.
 We start by discussing our implementation of the approaches,
-followed by our experimental setup, our results,
+followed by our experimental setup, results,
 and end with a discussion.
 
 ### Implementation
 
 To achieve a fair comparison between the different indexing approaches,
-we have implemented all approaches in the same programming language (TypeScript).
+we have implemented all approaches in the same programming language (TypeScript/JavaScript).
 The implementation of these approaches is open-source,
-and available on GitHub at [https://github.com/rubensworks/rdf-stores.js](https://github.com/rubensworks/rdf-stores.js).
+and is available on GitHub at [https://github.com/rubensworks/rdf-stores.js](https://github.com/rubensworks/rdf-stores.js).
 
 ### Experimental Setup
 
 To measure the performance impact of different quoted triple depths,
-we create simulated datasets at various sizes.
-
+we create synthetic datasets at various sizes.
 Our dataset generator is based on the data model of [](#use-case) with different people (size / 10) and colors (10),
 and allows any number of triples to be generated.
 Furthermore, it allows a *depth* parameter to be specified, which defines the number of quoted triples in object positions.
@@ -33,14 +32,14 @@ For each combination, we measure the performance of the four indexing approaches
 * **Ingestion time**: The duration of ingesting the generated triples in milliseconds.
 * **Query execution time**: The total duration of executing all triple pattern queries in milliseconds.
 
-Query execution was measured using 3 types of queries (examples assume depth 2):
+Query execution time was measured using 3 categories of queries (examples assume depth 2):
 
 * **Low selectivity**: Query people in the form of: `?person :says << ?person :says << :Violets :haveColor :Red >> >>`. Each query produces size / 10 results.
 * **Medium selectivity**: Query colors in the form of: `?person :says << :Bob :says << :Violets :haveColor ?color >> >>`. Each query produces 10 results.
 * **High selectivity**: Query colors of specific people in the form of: `:Alice :says << :Bob :says << :Violets :haveColor ?color >> >>`. Each query produces 1 results.
 
-The 4 indexing approaches were configured with 3 indexes (`SPO`, `POS`, `OSP`),
-and the indexed quoted triples dictionary was also configured with these 3 indexes.
+The four indexing approaches were configured with three indexes (`SPO`, `POS`, `OSP`),
+and the indexed quoted triples dictionary was also configured with these three indexes.
 All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB or RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
 Our experimental setup is fully reproducible, and is available together with the raw results at
 [https://github.com/rubensworks/experiments-indexing-quoted-triples](https://github.com/rubensworks/experiments-indexing-quoted-triples).
@@ -209,28 +208,27 @@ Query execution times for the 4 indexing approaches with increasing dataset size
 
 #### Storage size
 
-Our results from [](#figure-results-ingest-size) show that in terms of storage size,
-the singular dictionary and referential quoted dictionary approaches perform the best.
-The quoted dictionary and indexed quoted dictionary approaches on the other hand require significantly more memory.
+The results from [](#figure-results-ingest-size) show that in terms of storage size,
+the singular dictionary and referential quoted triples dictionary approaches perform the best.
+The quoted triples dictionary and indexed quoted triples dictionary approaches on the other hand require significantly more memory.
 Contrary to what we hypothesized in [](#approaches), the storage overhead of the singular dictionary for terms inside quoted triples
-is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted dictionary are minimal.
-The indexed quoted dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.
+is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted triples dictionary are minimal.
+The indexed quoted triples dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.
 
 #### Ingestion time
 
 As expected, we observe similar results in terms of ingestion time in [](#figure-results-ingest-time),
-where the singular dictionary and quoted dictionary are significantly faster than the referential and indexed quoted dictionary approaches.
+where the singular dictionary and quoted triples dictionary are significantly faster than the referential and indexed quoted triples dictionary approaches.
 These approaches are faster due to their simpler encoding approach,
-whereas the referential and indexed quoted dictionary approaches simply require more operations during triple encoding.
+whereas the referential and indexed quoted triples dictionary approaches require more operations during triple encoding.
 
 #### Query execution time
 
 The results in [](#figure-results-query-low), [](#figure-results-query-med), and [](#figure-results-query-high)
-show that on average, the indexed quoted dictionary approach outperforms all other approaches.
+show that on average, the indexed quoted triples dictionary approach vastly outperforms all other approaches.
 This is most significant for triple patterns with medium selectivity due to the fact that this approach
 has indexes corresponding exactly to these queries, while the other approaches require iteration over all quoted triples.
-For triple patterns with low selectivity, the difference is smaller, but the indexed quoted dictionary approach is still faster overall.
+For triple patterns with low selectivity, the difference is smaller, but the indexed quoted triples dictionary approach is still faster overall.
 The difference for triple patterns with high selectivity is minimal,
-as the overhead of execution time of fetching the single query result
-lies not in the index lookup, but in the other aspects of the triplestore implementation,
-such as dictionary encoding of triple patterns.
+as the overhead of triple pattern dictionary encoding during query execution
+when fetching a single result becomes more apparent.

@@ -123,8 +123,8 @@
 <use x='36.50615' y='98.277942' xlink:href='#g3-114'/>
 <use x='39.94165' y='98.277942' xlink:href='#g3-121'/>
 </g>
-<path d='M162.824125 15.6406L95.269525 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
-<path d='M196.898125 16.6914L196.996125 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
-<path d='M230.867125 15.5977L298.719125 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
+<path d='M162.824125 15.6406L95.269525 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-dasharray='2.98883,2.98883'/>
+<path d='M196.898125 16.6914L196.996125 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-dasharray='2.98883,2.98883'/>
+<path d='M230.867125 15.5977L298.719125 42.9805' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-dasharray='2.98883,2.98883'/>
 </g>
 </svg>

@@ -3,15 +3,17 @@
 
 In this section, we introduce four approaches for indexing quoted triples,
 with increasing levels of complexity.
-These approaches build upon the well-established method of storing triples in different orders
-and using dictionary encoding as explained in [](#background).
+These approaches build upon the well-established methods of
+using dictionary encoding
+and storing triples in different orders
+as explained in [](#background).
 Our approaches only rely on changes within the dictionary mechanism,
-while the triple index itself remain unchanged.
+while the triple index itself can remain unchanged.
 
 ### Singular Dictionary
 
 A straightforward way to achieve dictionary encoding of quoted triples,
-is to include quoted triples directly inside the dictionary of all other RDF terms.
+is to include quoted triples directly inside the dictionary with all other RDF terms.
 As such, quoted triples are handled in exactly the same manner as other RDF term types.
 For dictionaries that map strings to integers, this requires a mechanism to convert quoted triples into strings.
 [](#figure-dict-singular) shows an example of such dictionary contents based on our use case data.
@@ -26,7 +28,7 @@ Plain terms and quoted triples are stored inside the same dictionary.
 Executing triple pattern queries is identical to the baseline approach as explain in [](#background),
 except for triple patterns containing quoted variables, such as the query `?person :says <<Violets haveColor ?color>>`.
 As this approach has no direct way of matching the `?color` variable to quoted triples,
-we are required to convert quoted triple patterns containing variables to variables,
+we are required to convert quoted triple pattern terms containing variables to variables,
 and perform a post-processing step to only emit those triples that match the quoted triple pattern.
 The pseudo-code of this algorithm is shown in [](#algorithm-query-dict-singular).
 
@@ -80,12 +82,12 @@ will only lead to matches with entries in the quoted triples dictionary,
 as opposed to _all_ possible terms.
 However, as shown in [](#figure-dict-quoted), this approach can still lead to redundant storage
 if terms are shared across different quoted triples, such as `:Violet` and `:haveColor`.
-Furthermore, the join inside the component index using all quoted triples
+Furthermore, the join inside the triple component index using all quoted triples
 might become too expensive if there are many non-matching quoted triples.
 
 ### Referential Quoted Triples Dictionary
 
-To solve the redundant storage issue from the quoted triples dictionary approach,
+To solve the redundant storage issue within the quoted triples dictionary approach,
 we extend upon that approach by not storing quoted triples in full,
 but by instead encoding the three components of that quoted triples,
 and using those encodings as key inside the dictionary.
@@ -108,13 +110,13 @@ due to the shared encoding of redundant terms inside quoted triples.
 
 ### Indexed Quoted Triples Dictionary
 
-The Quoted Triples Dictionary approach requires index components to join will all quoted triples,
+The Quoted Triples Dictionary approach requires triple component indexes to join with all quoted triples,
 which may be costly for selective quoted triple patterns in the presence of many non-matching quoted triples.
 To solve this problem, we can modify the storage of our Quoted Triples Dictionary
 from a map-like structure to a tree-like structure,
 so that triple pattern matching can be done more efficiently.
 Concretely, this tree-like structure can be implemented similar to a triple index,
-but it must map to integer encodings.
+but it must map to integer encodings of quoted triples.
 [](#figure-dict-quoted-referential-indexed) illustrates an example of this approach.
 This example only makes use of the `SPO` order for encodings,
 but in practise multiple other collation orders may be used.

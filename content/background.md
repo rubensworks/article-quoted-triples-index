@@ -2,15 +2,15 @@
 {:#background}
 
 Indexing is an important and well-understood element of RDF storage systems and SPARQL query engines,
-where it provides a trade-off between query execution time and storage space.
+where it provides a trade-off between query execution time, storage space, and ingestion time.
 Existing approaches are either based on existing database technologies,
 such as [relational databases](cite:cites virtuoso) or [document stores](cite:cites dsparq),
 or provide native support for RDF triples.
 In the context of this paper, we focus on the latter.
-We limit our discussion to the storage of RDF triples
+Furthermore, we limit our discussion to the storage of RDF triples
 without considering the concept of named graphs,
 as these can be considered as fourth element in a quad-like structure,
-for which straightforward indexing approaches are possible.
+for which straightforward index extensions are possible.
 
 ### Indexes for different orders
 
@@ -18,30 +18,33 @@ A first important concept in RDF indexing is the *storage of triples in differen
 which is done by many RDF storage techniques, such as [RDF-3X](cite:cites rdf3x) and [Hexastore](cite:cites hexastore).
 Given that a triple consists of
 a subject (`S`), predicate (`P`) and object (`O`),
-they both include six indexes for different triple component orders (`SPO`, `SOP`, `OSP`, `OPS`, `PSO` and `POS`).
+both systems include six indexes for different triple component orders (`SPO`, `SOP`, `OSP`, `OPS`, `PSO` and `POS`).
 The presence of these indexes allows all possible triple patterns to be executed efficiently.
 For example, the triple pattern query `??O` can be answered most efficiently using the `OSP` or `OPS` indexes,
 while the query `S?O` could be answered using `SOP` and `OSP`.
-Next to triple pattern access efficiency, these orders also enable more efficient inner join processing inside query engines,
+Next to triple pattern access efficiency, these orders also enable more efficient triple pattern join processing inside query engines,
 where the highly efficient sort-merge join could for example be used for joins between triple patterns if triples are sorted in the same manner.
 RDF-3X goes a step further, and also provides six aggregated indexes (`SP`, `SO`, `PS`, `PO`, `OS`, and `OP`),
 and three one-valued indexes (`S`, `P`, and `O`).
 The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
 Approaches such as [HDT](cite:cites hdt) and [OSTRICH](cite:cites ostrich) go the different direction,
-and store fewer indexes (`SPO`, `POS`, `OSP`) to focus purely on the triple pattern access efficiency.
+and store fewer indexes (`SPO`, `POS`, `OSP`) to focus purely on the triple pattern access efficiency in combination with a lower storage cost.
+In the context of this article, we assume tree-like indexing,
+and we refer to the triple component parts of an index as *triple component indexes*.
+For example, the `SPO` index would have 3 triple component indexes: `S`, `P`, and `O`.
 
 ### Dictionary encoding
 
 A second important aspect in RDF indexing is the *encoding of RDF terms using dictionaries*.
-The main purpose of dictionary-encoding is the reduction in storage overhead if RDF terms are reused across multiple triples inside indexes.
+A main purpose of dictionary-encoding is the reduction in storage overhead if RDF terms are reused across multiple triples inside indexes.
 The dictionary itself is a datastructure that maintains a bidirectional mapping of RDF terms to their encodings.
-Instead of storing RDF terms directly inside indexes, the are first encoded into a more compact datatype, such as an integer,
+Instead of storing RDF terms directly inside indexes, terms are first encoded into a more compact datatype, such as an integer,
 which is then stored inside the index instead.
 At query time, non-variable triple pattern terms can also be encoded, and queried inside the index.
-When returning query results, the encoded triples can be decoded using the dictionary.
+When returning query results, encoded triples can be decoded using the dictionary.
 
-[](#figure-background-triplestore) shows an illustration of the typical components inside a triplestore.
-This example store contains three indexes, with triples store in `SPO`, `POS`, and `OSP` orders in tree-like structure.
+[](#figure-background-triplestore) shows an illustration of the typical components of a triplestore.
+This example store contains three indexes, with triples stored in `SPO`, `POS`, and `OSP` orders in tree-like structure.
 These indexes make use of a single shared dictionary, which encodes the RDF terms inside all RDF triples stored by the indexes.
 
 <figure id="figure-background-triplestore">
@@ -64,6 +67,7 @@ In this step, we recursively drill down into the tree-like index by iterating ov
 The algorithm for finding all matches for a single triple pattern component is shown in [](#algorithm-triplestoreindexcomponent-query),
 which either returns all terms in this part of the index if the term is a variable,
 or returns the term itself if the term is inside the index if the term is not a variable.
+We will replace parts of these algorithms when introducing our quoted triples indexing approaches in [](#approaches).
 
 <figure id="algorithm-triplestore-query" class="algorithm">
 ````/algorithms/algorithm-triplestore-query.txt````

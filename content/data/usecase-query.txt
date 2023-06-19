@@ -1,4 +1,4 @@
-PREFIX : <http://example.org/foo>
+PREFIX : <http://example.org/foo#>
 SELECT ?person ?color WHERE {
   ?person :says << :Violets :haveColor ?color >> .
 }
