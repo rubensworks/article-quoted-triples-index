@@ -9,8 +9,9 @@ header {
 }
 
 .results-sidebyside {
+  display: flex;
+  flex-wrap: wrap;
   .subfigure {
-    float: left;
     img {
       width: 320px;
     }
