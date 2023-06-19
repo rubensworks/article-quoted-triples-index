@@ -37,7 +37,7 @@ Query execution was measured using 3 types of queries (examples assume depth 2):
 
 * **Low selectivity**: Query people in the form of: `?person :says << ?person :says << :Violets :haveColor :Red >> >>`. Each query produces size / 10 results.
 * **Medium selectivity**: Query colors in the form of: `?person :says << :Bob :says << :Violets :haveColor ?color >> >>`. Each query produces 10 results.
-* **Medium selectivity**: Query colors of specific people in the form of: `:Alice :says << :Bob :says << :Violets :haveColor ?color >> >>`. Each query produces 1 results.
+* **High selectivity**: Query colors of specific people in the form of: `:Alice :says << :Bob :says << :Violets :haveColor ?color >> >>`. Each query produces 1 results.
 
 The 4 indexing approaches were configured with 3 indexes (`SPO`, `POS`, `OSP`),
 and the indexed quoted triples dictionary was also configured with these 3 indexes.
@@ -207,5 +207,30 @@ Query execution times for the 4 indexing approaches with increasing dataset size
 
 ### Discussion
 
-{:.todo}
-Analyze results
+#### Storage size
+
+Our results from [](#figure-results-ingest-size) show that in terms of storage size,
+the singular dictionary and referential quoted dictionary approaches perform the best.
+The quoted dictionary and indexed quoted dictionary approaches on the other hand require significantly more memory.
+Contrary to what we hypothesized in [](#approaches), the storage overhead of the singular dictionary for terms inside quoted triples
+is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted dictionary are minimal.
+The indexed quoted dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.
+
+#### Ingestion time
+
+As expected, we observe similar results in terms of ingestion time in [](#figure-results-ingest-time),
+where the singular dictionary and quoted dictionary are significantly faster than the referential and indexed quoted dictionary approaches.
+These approaches are faster due to their simpler encoding approach,
+whereas the referential and indexed quoted dictionary approaches simply require more operations during triple encoding.
+
+#### Query execution time
+
+The results in [](#figure-results-query-low), [](#figure-results-query-med), and [](#figure-results-query-high)
+show that on average, the indexed quoted dictionary approach outperforms all other approaches.
+This is most significant for triple patterns with medium selectivity due to the fact that this approach
+has indexes corresponding exactly to these queries, while the other approaches require iteration over all quoted triples.
+For triple patterns with low selectivity, the difference is smaller, but the indexed quoted dictionary approach is still faster overall.
+The difference for triple patterns with high selectivity is minimal,
+as the overhead of execution time of fetching the single query result
+lies not in the index lookup, but in the other aspects of the triplestore implementation,
+such as dictionary encoding of triple patterns.
