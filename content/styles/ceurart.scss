@@ -97,7 +97,7 @@ font-size:9pt;
 }
 
 figure pre {
-font-size:6pt;
+font-size:8pt;
 }
 
 }
@@ -765,7 +765,7 @@ figure pre {
 text-align:left;
 }
 
-figure.listing pre {
+figure.listing pre, figure.algorithm pre {
 border:1px solid #000;
 padding:0.5em;
 counter-reset:precode;

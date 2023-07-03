@@ -13,4 +13,3 @@ IF term.type === 'Quoted' && term contains variables
 ELSE
   RETURN QueryIndexComponent(idxc, dict, term)
 END
-
