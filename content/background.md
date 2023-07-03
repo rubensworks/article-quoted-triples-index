@@ -30,13 +30,14 @@ The triples inside each index can be stored in different ways, such as ordered l
 Approaches such as [HDT](cite:cites hdt) and [OSTRICH](cite:cites ostrich) go the different direction,
 and store fewer indexes (`SPO`, `POS`, `OSP`) to focus purely on the triple pattern access efficiency in combination with a lower storage cost.
 In the context of this article, we assume tree-like indexing,
-and we refer to the triple component parts of an index as *triple component indexes*.
+and we refer to the triple component parts of an index as *triple component indexes*, corresponding to the levels in the tree.
 For example, the `SPO` index would have 3 triple component indexes: `S`, `P`, and `O`.
 
 ### Dictionary encoding
 
 A second important aspect in RDF indexing is the *encoding of RDF terms using dictionaries*.
-A main purpose of dictionary-encoding is the reduction in storage overhead if RDF terms are reused across multiple triples inside indexes.
+The main purposes of dictionary-encoding are the reduction in storage overhead if RDF terms are reused across multiple triples inside indexes,
+and more efficient comparison of RDF terms during query processing.
 The dictionary itself is a datastructure that maintains a bidirectional mapping of RDF terms to their encodings.
 Instead of storing RDF terms directly inside indexes, terms are first encoded into a more compact datatype, such as an integer,
 which is then stored inside the index instead.
@@ -60,7 +61,8 @@ To simplify discussions involving triple pattern queries,
 we outline a traditional high-level query execution approach for triple pattern queries
 in [](#algorithm-triplestore-query), [](#algorithm-triplestoreindex-query), and [](#algorithm-triplestoreindexcomponent-query).
 As shown in [](#algorithm-triplestore-query), the first step involves determining the most suitable index for a given triple pattern query.
-For example, a `??O` query can be answered most efficiently using the `OSP` index.
+For example, a `??O` query can be answered most efficiently using the `OSP` index,
+because `O` can be selected in constant time from the root of the tree.
 The triple pattern query is then delegated to the index,
 which is executed according to [](#algorithm-triplestoreindex-query).
 In this step, we recursively drill down into the tree-like index by iterating over all matching terms of each triple pattern component.

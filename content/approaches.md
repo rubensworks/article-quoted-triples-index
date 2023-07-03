@@ -117,7 +117,7 @@ from a map-like structure to a tree-like structure,
 so that triple pattern matching can be done more efficiently.
 Concretely, this tree-like structure can be implemented similar to a triple index,
 but it must map to integer encodings of quoted triples.
-[](#figure-dict-quoted-referential-indexed) illustrates an example of this approach.
+[](#figure-dict-quoted-indexed) illustrates an example of this approach.
 This example only makes use of the `SPO` order for encodings,
 but in practise multiple other collation orders may be used.
 
@@ -135,7 +135,7 @@ with the difference that instead of joining with _all_ quoted triples,
 we join with only those quoted triples that match with the current quoted triple pattern.
 The pseudo-code of this algorithm is shown in [](#algorithm-query-dict-quoted-indexed).
 
-<figure id="algorithm-query-dict-quoted-index" class="algorithm">
+<figure id="algorithm-query-dict-quoted-indexed" class="algorithm">
 ````/algorithms/query-dict-quoted-index.txt````
 <figcaption markdown="block">
 Pseudocode of the algorithm for finding all matching terms of a certain triple component inside an index using an indexed quoted triples dictionary.

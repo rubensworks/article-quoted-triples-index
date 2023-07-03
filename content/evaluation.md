@@ -17,10 +17,10 @@ and is available on GitHub at [https://github.com/rubensworks/rdf-stores.js](htt
 ### Experimental Setup
 
 To measure the performance impact of different quoted triple depths,
-we create synthetic datasets at various sizes.
+we create synthetic datasets of various sizes.
 Our dataset generator is based on the data model of [](#use-case) with different people (size / 10) and colors (10),
 and allows any number of triples to be generated.
-Furthermore, it allows a *depth* parameter to be specified, which defines the number of quoted triples in object positions.
+Furthermore, it allows a *depth* parameter to be specified, which defines the nesting depth of quoted triples in object positions.
 For instance, a depth value of 1 generates quoted triples in the form of `?person :says << :Violets :haveColor ?color >>`,
 while a depth value of 3 generated quoted triples in the form of `?person :says << ?person :says << ?person :says << :Violets :haveColor ?color >> >> >>`.
 
