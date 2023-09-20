@@ -6,7 +6,7 @@ as two major but diverging approaches for modeling [Knowledge Graphs](cite:cites
 One of the main reasons for divergence, is the fact that LPGs allow datasets to contain statements about other statements, while RDF does not.
 This concept enables attaching metadata to statements, such as certainties or temporal validity.
 For example, it allows one to express _"Alice says that Violets are Blue."_,
-where the statement statement about Violets being Blue is *quoted* inside a statement from Alice.
+where the statement about Violets being Blue is *quoted* inside a statement about Alice.
 
 In an effort to align these incompatibilities between RDF and LPGs,
 the [RDF\*](cite:cites rdfstar) approach was introduced,

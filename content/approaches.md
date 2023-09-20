@@ -25,7 +25,7 @@ Plain terms and quoted triples are stored inside the same dictionary.
 </figcaption>
 </figure>
 
-Executing triple pattern queries is identical to the baseline approach as explain in [](#background),
+Executing triple pattern queries is identical to the baseline approach as explained in [](#background),
 except for triple patterns containing quoted variables, such as the query `?person :says <<Violets haveColor ?color>>`.
 As this approach has no direct way of matching the `?color` variable to quoted triples,
 we are required to convert quoted triple pattern terms containing variables to variables,

@@ -4,7 +4,7 @@
 In this article, we discussed four approaches for the in-memory indexing of quoted triples,
 ranging from very naive to highly optimized for quoted triple pattern access.
 
-Our results show that the indexed quoted triples dictionary approach is orders of magnitude faster than other indexing approaches.
+Our results show that the indexed quoted triples dictionary approach is on average orders of magnitude faster than other indexing approaches.
 In the most extreme case, this approach is over 4.000 to 11.000 times faster than other indexing approaches
 for a dataset size of 1 million with quoted triples at depth 5.
 For smaller dataset sizes, lower quoted triple depths, and other types of queries, the difference becomes smaller.

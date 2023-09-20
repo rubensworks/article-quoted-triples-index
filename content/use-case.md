@@ -24,3 +24,7 @@ For brevity in the remainder of this article, we refer to the variables inside q
 SPARQL query to find what color each person says violets have.
 </figcaption>
 </figure>
+
+More advanced datasets may also contain _nested_ quoted triples,
+in which any term inside a quoted triple could be another quoted triple.
+There is no upper limit of the nesting depth that can occur.

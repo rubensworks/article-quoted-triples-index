@@ -24,7 +24,7 @@ Furthermore, it allows a *depth* parameter to be specified, which defines the ne
 For instance, a depth value of 1 generates quoted triples in the form of `?person :says << :Violets :haveColor ?color >>`,
 while a depth value of 3 generated quoted triples in the form of `?person :says << ?person :says << ?person :says << :Violets :haveColor ?color >> >> >>`.
 
-For our experiments, we range the dataset from 1.000 to 1.000.000,
+For our experiments, we range the dataset from 1.000 to 1.000.000 triples,
 with the depth ranging from 1 to 5.
 For each combination, we measure the performance of the four indexing approaches in terms of the following metrics:
 
@@ -40,7 +40,7 @@ Query execution time was measured using 3 categories of queries (examples assume
 
 The four indexing approaches were configured with three indexes (`SPO`, `POS`, `OSP`),
 and the indexed quoted triples dictionary was also configured with these three indexes.
-All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB or RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
+All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB of RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
 Our experimental setup is fully reproducible, and is available together with the raw results at
 [https://github.com/rubensworks/experiments-indexing-quoted-triples](https://github.com/rubensworks/experiments-indexing-quoted-triples).
 
@@ -52,6 +52,20 @@ for the different indexing approaches.
 respectively show the query execution times for low, medium, and high selectivity queries.
 We omit results for quoted triple depths that do not provide additional insights aside from the highest and lowest values.
 To show an overview of all storage sizes, all figures are logarithmic in both axes.
+
+The labels inside each figure map to the indexing approaches as follows:
+
+[Singular Dictionary](#singular-dictionary)
+: `singular`
+
+[Quoted Triples Dictionary](#quoted-triples-dictionary)
+: `quoted`
+
+[Referential Quoted Triples Dictionary](#referential-quoted-triples-dictionary)
+: `quoted-ref`
+
+[Indexed Quoted Triples Dictionary](#indexed-quoted-triples-dictionary)
+: `quoted-idx`
 
 <figure id="figure-results-ingest-size" class="results-sidebyside">
 
@@ -213,6 +227,8 @@ the singular dictionary and referential quoted triples dictionary approaches per
 The quoted triples dictionary and indexed quoted triples dictionary approaches on the other hand require significantly more memory.
 Contrary to what we hypothesized in [](#approaches), the storage overhead of the singular dictionary for terms inside quoted triples
 is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted triples dictionary are minimal.
+This is due to the [*string interning*](https://www.zhenghao.io/posts/javascript-memory) memory optimization that is used by Node.js,
+whereby multiple equal string instances are only stored once in memory.
 The indexed quoted triples dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.
 
 #### Ingestion time

@@ -14,7 +14,7 @@ for which straightforward index extensions are possible.
 
 ### Indexes for different orders
 
-A first important concept in RDF indexing is the *storage of triples in different orders*,
+A first important concept in RDF indexing is the [*storage of triples in different orders*](cite:cites differentorders),
 which is done by many RDF storage techniques, such as [RDF-3X](cite:cites rdf3x) and [Hexastore](cite:cites hexastore).
 Given that a triple consists of
 a subject (`S`), predicate (`P`) and object (`O`),
@@ -29,7 +29,7 @@ and three one-valued indexes (`S`, `P`, and `O`).
 The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
 Approaches such as [HDT](cite:cites hdt) and [OSTRICH](cite:cites ostrich) go the different direction,
 and store fewer indexes (`SPO`, `POS`, `OSP`) to focus purely on the triple pattern access efficiency in combination with a lower storage cost.
-In the context of this article, we assume tree-like indexing,
+In the context of this article, we assume tree-like indexing via nested hash maps,
 and we refer to the triple component parts of an index as *triple component indexes*, corresponding to the levels in the tree.
 For example, the `SPO` index would have 3 triple component indexes: `S`, `P`, and `O`.
 

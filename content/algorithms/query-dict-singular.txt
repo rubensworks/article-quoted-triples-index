@@ -8,9 +8,6 @@ FUNCTION QueryIndexSingularDict(idx, dict, tp)
 IF tp.subject.type === 'Quoted' && tp.subject contains variables
   s_filter = tp.subject
   tp.subject = new Variable()
-IF tp.predicate.type === 'Quoted' && tp.predicate contains variables
-  p_filter = tp.predicate
-  tp.predicate = new Variable()
 IF tp.object.type === 'Quoted' && tp.object contains variables
   o_filter = tp.object
   tp.object = new Variable()
