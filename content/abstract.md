@@ -18,3 +18,19 @@ Our work shows that indexing quoted triples in a dictionary separate from non-qu
 and can be implemented using well-known indexing techniques into existing systems.
 <!-- Perspectives -->
 Therefore, we illustrate that the addition of quoted triples into the RDF stack can be achieved in a performant manner.
+
+<span id="keywords" rel="schema:about"><span class="title">Keywords</span>
+<a href="https://en.wikipedia.org/wiki/Resource_Description_Framework" resource="http://dbpedia.org/resource/Resource_Description_Framework">RDF</a>,
+RDF-star,
+indexing
+</span>
+
+<span class="printonly firstpagefooter">
+<span class="firstpagefootertop">&nbsp;</span>
+<span class="footnotecopyright">
+<span style="font-style:italic">7th Workshop on Storing, Querying and Benchmarking Knowledge Graphs (QuWeDa) at ISWC 2023</span><br />
+<img src="img/mail.png" width="12px" /> ruben.taelman@ugent.be (R. Taelman); <img src="img/mail.png" width="12px" /> ruben.verborgh@ugent.be (R. Verborgh)<br />
+<img src="img/cc-by.png" width="50px" /><span style="font-size: 0.75em">© 2023 Copyright for this paper by its authors. Use permitted under Creative Commons License Attribution 4.0 International (CC BY 4.0).</span><br />
+<img src="img/ceur-ws-logo.png" width="50px" />CEUR Workshop Proceedings (<a href="https://CEUR-WS.org">CEUR-WS.org</a>)<br />
+</span>
+</span>

@@ -19,7 +19,14 @@ for standardization into the RDF 1.2 and SPARQL 1.2 recommendations.
 Given the [wide range of practical real-world applications](cite:cites kasenchak2021use, solidsignedrdfstar) for quoted triples,
 [many open-source and commercial RDF and SPARQL systems have already implemented parts of this approach](cite:cites rdfstarimplementations).
 Notable are systems such as BlazeGraph, GraphDB, and Stardog,
-which offer the storage of quoted triples in their triplestore, and enable queryable access using SPARQL.
+which offer the storage of quoted
+
+<span class="placeholder printonly">
+<span style="display: block; height: 12em;"></span>
+<!-- This is a dummy placeholder -->
+</span>
+
+triples in their triplestore, and enable queryable access using SPARQL.
 Even though some approaches offer reports of their systems passing RDF-star specification tests,
 and provide high-level documentation explaining the concepts of quoted triples for end-users,
 none of them offer detailed descriptions of their indexing approach,
