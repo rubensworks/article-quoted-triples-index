@@ -2,21 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <meta charset="utf-8" />
-  <title property="foaf:name schema:name">In-Memory Indexing of Quoted RDF Triples</title>
+  <title property="foaf:name schema:name">In-Memory Dictionary-based Indexing of Quoted RDF Triples</title>
   <link rel="stylesheet" media="screen" href="styles/screen.css" />
   <link rel="stylesheet" media="print"  href="styles/print.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <meta name="citation_title" content="In-Memory Indexing of Quoted RDF Triples">
+  <meta name="citation_title" content="In-Memory Dictionary-based Indexing of Quoted RDF Triples">
   <meta name="citation_author" content="Ruben Taelman" />
   <meta name="citation_author" content="Ruben Verborgh" />
   
-  <meta name="citation_publication_date" content="2023/07/03" />
+  <meta name="citation_publication_date" content="2023/09/20" />
 </head>
 
 <body prefix="dctypes: http://purl.org/dc/dcmitype/ pimspace: http://www.w3.org/ns/pim/space# rsa: http://www.w3.org/ns/auth/rsa# cert: http://www.w3.org/ns/auth/cert# wgs: http://www.w3.org/2003/01/geo/wgs84_pos# biblio: http://purl.org/net/biblio# bibo: http://purl.org/ontology/bibo/ book: http://purl.org/NET/book/vocab# ov: http://open.vocab.org/terms/ doap: http://usefulinc.com/ns/doap# dbr: http://dbpedia.org/resource/ dbp: http://dbpedia.org/property/ sio: http://semanticscience.org/resource/ opmw: http://www.opmw.org/ontology/ deo: http://purl.org/spar/deo/ doco: http://purl.org/spar/doco/ cito: http://purl.org/spar/cito/ fabio: http://purl.org/spar/fabio/ solid: http://www.w3.org/ns/solid/terms# acl: http://www.w3.org/ns/auth/acl# dio: https://w3id.org/dio# lsc: http://linkedscience.org/lsc/ns#" typeof="schema:CreativeWork sioc:Post prov:Entity lsc:Research">
   <header>
-  <h1 id="in-memory-indexing-of-quoted-rdf-triples">In-Memory Indexing of Quoted RDF Triples</h1>
+  <h1 id="in-memory-dictionary-based-indexing-of-quoted-rdf-triples">In-Memory Dictionary-based Indexing of Quoted RDF Triples</h1>
 
   <ul id="authors">
     <li><a rev="lsc:participatesIn" property="foaf:maker schema:creator schema:author schema:publisher" href="https://www.rubensworks.net/" typeof="foaf:Person schema:Person" resource="https://www.rubensworks.net/#me">Ruben Taelman</a></li>
@@ -64,6 +64,22 @@ and can be implemented using well-known indexing techniques into existing system
 <!-- Perspectives -->
 Therefore, we illustrate that the addition of quoted triples into the RDF stack can be achieved in a performant manner.</p>
 
+      <p><span id="keywords" rel="schema:about"><span class="title">Keywords</span>
+<a href="https://en.wikipedia.org/wiki/Resource_Description_Framework" resource="http://dbpedia.org/resource/Resource_Description_Framework">RDF</a>,
+RDF-star,
+indexing
+</span></p>
+
+      <p><span class="printonly firstpagefooter">
+<span class="firstpagefootertop"> </span>
+<span class="footnotecopyright">
+<span style="font-style:italic">7th Workshop on Storing, Querying and Benchmarking Knowledge Graphs (QuWeDa) at ISWC 2023</span><br />
+<img src="img/mail.png" width="12px" /> ruben.taelman@ugent.be (R. Taelman); <img src="img/mail.png" width="12px" /> ruben.verborgh@ugent.be (R. Verborgh)<br />
+<img src="img/cc-by.png" width="50px" /><span style="font-size: 0.75em">© 2023 Copyright for this paper by its authors. Use permitted under Creative Commons License Attribution 4.0 International (CC BY 4.0).</span><br />
+<img src="img/ceur-ws-logo.png" width="50px" />CEUR Workshop Proceedings (<a href="https://CEUR-WS.org">CEUR-WS.org</a>)<br />
+</span>
+</span></p>
+
     </div>
 </section>
 
@@ -78,7 +94,7 @@ as two major but diverging approaches for modeling Knowledge Graphs <span class
 One of the main reasons for divergence, is the fact that LPGs allow datasets to contain statements about other statements, while RDF does not.
 This concept enables attaching metadata to statements, such as certainties or temporal validity.
 For example, it allows one to express <em>“Alice says that Violets are Blue.”</em>,
-where the statement statement about Violets being Blue is <em>quoted</em> inside a statement from Alice.</p>
+where the statement about Violets being Blue is <em>quoted</em> inside a statement about Alice.</p>
 
         <p>In an effort to align these incompatibilities between RDF and LPGs,
 the RDF* <span class="references">[<a href="#ref-4">4</a>]</span> approach was introduced,
@@ -91,7 +107,14 @@ for standardization into the RDF 1.2 and SPARQL 1.2 recommendations.</p>
         <p>Given the wide range of practical real-world applications <span class="references">[<a href="#ref-6">6</a>, <a href="#ref-7">7</a>]</span> for quoted triples,
 <a property="schema:citation http://purl.org/spar/cito/cites" href="https://w3c.github.io/rdf-star/implementations.html">many open-source and commercial RDF and SPARQL systems have already implemented parts of this approach</a> <span class="references">[<a href="#ref-8">8</a>]</span>.
 Notable are systems such as BlazeGraph, GraphDB, and Stardog,
-which offer the storage of quoted triples in their triplestore, and enable queryable access using SPARQL.
+which offer the storage of quoted</p>
+
+        <p><span class="placeholder printonly">
+<span style="display: block; height: 12em;"></span>
+<!-- This is a dummy placeholder -->
+</span></p>
+
+        <p>triples in their triplestore, and enable queryable access using SPARQL.
 Even though some approaches offer reports of their systems passing RDF-star specification tests,
 and provide high-level documentation explaining the concepts of quoted triples for end-users,
 none of them offer detailed descriptions of their indexing approach,
@@ -152,7 +175,7 @@ for which straightforward index extensions are possible.</p>
 
         <h3 id="indexes-for-different-orders">Indexes for different orders</h3>
 
-        <p>A first important concept in RDF indexing is the <em>storage of triples in different orders</em>,
+        <p>A first important concept in RDF indexing is the <em>storage of triples in different orders</em> <span class="references">[<a href="#ref-20">20</a>]</span>,
 which is done by many RDF storage techniques, such as RDF-3X <span class="references">[<a href="#ref-10">10</a>]</span> and Hexastore <span class="references">[<a href="#ref-11">11</a>]</span>.
 Given that a triple consists of
 a subject (<code>S</code>), predicate (<code>P</code>) and object (<code>O</code>),
@@ -165,9 +188,9 @@ where the highly efficient sort-merge join could for example be used for joins b
 RDF-3X goes a step further, and also provides six aggregated indexes (<code>SP</code>, <code>SO</code>, <code>PS</code>, <code>PO</code>, <code>OS</code>, and <code>OP</code>),
 and three one-valued indexes (<code>S</code>, <code>P</code>, and <code>O</code>).
 The triples inside each index can be stored in different ways, such as ordered lists (Hexastore) or B+Trees (RDF-3X).
-Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-9">9</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-20">20</a>]</span> go the different direction,
+Approaches such as <a property="schema:citation http://purl.org/spar/cito/cites" href="http://www.websemanticsjournal.org/index.php/ps/article/view/328">HDT</a> <span class="references">[<a href="#ref-9">9</a>]</span> and <a property="schema:citation http://purl.org/spar/cito/cites" href="https://rdfostrich.github.io/article-jws2018-ostrich/">OSTRICH</a> <span class="references">[<a href="#ref-21">21</a>]</span> go the different direction,
 and store fewer indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>) to focus purely on the triple pattern access efficiency in combination with a lower storage cost.
-In the context of this article, we assume tree-like indexing,
+In the context of this article, we assume tree-like indexing via nested hash maps,
 and we refer to the triple component parts of an index as <em>triple component indexes</em>, corresponding to the levels in the tree.
 For example, the <code>SPO</code> index would have 3 triple component indexes: <code>S</code>, <code>P</code>, and <code>O</code>.</p>
 
@@ -217,7 +240,7 @@ We will replace parts of these algorithms when introducing our quoted triples in
 </code><code>  OUTPUT:
 </code><code>    ts: sequence of triples
 </code><code>idx = most suitable index from store.indexes
-</code><code>ts = QueryTriplePatternIndex(idx, store.dict, tp)
+</code><code>ts = QueryIndex(idx, store.dict, tp)
 </code><code>RETURN ts</code></pre>
 <figcaption>
             <p><span class="label">Algorithm 1:</span> Pseudocode for executing a triple pattern query over a triplestore containing one or more indexes.</p>
@@ -233,6 +256,7 @@ We will replace parts of these algorithms when introducing our quoted triples in
 </code><code>  OUTPUT:
 </code><code>    ts: sequence of triples
 </code><code>tpe = dict.encode(tp);
+</code><code>ts = [];
 </code><code>FOR subject IN QueryIndexComponent(idx, dict, tpe.subject])
 </code><code>  indx_s = idx[subject]
 </code><code>  FOR predicate IN QueryIndexComponent(indx_s, dict, tpe.predicate])
@@ -243,7 +267,6 @@ We will replace parts of these algorithms when introducing our quoted triples in
 </code><code>    END
 </code><code>  END
 </code><code>END
-</code><code>ts = 
 </code><code>RETURN ts</code></pre>
 <figcaption>
             <p><span class="label">Algorithm 2:</span> Pseudocode for executing a triple pattern query over an index, sorted in <code>SPO</code> order.</p>
@@ -312,6 +335,10 @@ For brevity in the remainder of this article, we refer to the variables inside q
           </figcaption>
 </figure>
 
+        <p>More advanced datasets may also contain <em>nested</em> quoted triples,
+in which any term inside a quoted triple could be another quoted triple.
+There is no upper limit of the nesting depth that can occur.</p>
+
       </div>
 </section>
 
@@ -343,7 +370,7 @@ For dictionaries that map strings to integers, this requires a mechanism to conv
           </figcaption>
 </figure>
 
-        <p>Executing triple pattern queries is identical to the baseline approach as explain in <a href="#background">Section 3</a>,
+        <p>Executing triple pattern queries is identical to the baseline approach as explained in <a href="#background">Section 3</a>,
 except for triple patterns containing quoted variables, such as the query <code>?person :says &lt;&lt;Violets haveColor ?color&gt;&gt;</code>.
 As this approach has no direct way of matching the <code>?color</code> variable to quoted triples,
 we are required to convert quoted triple pattern terms containing variables to variables,
@@ -361,9 +388,6 @@ The pseudo-code of this algorithm is shown in <a href="#algorithm-query-dict-sin
 </code><code>IF tp.subject.type === &#39;Quoted&#39; &amp;&amp; tp.subject contains variables
 </code><code>  s_filter = tp.subject
 </code><code>  tp.subject = new Variable()
-</code><code>IF tp.predicate.type === &#39;Quoted&#39; &amp;&amp; tp.predicate contains variables
-</code><code>  p_filter = tp.predicate
-</code><code>  tp.predicate = new Variable()
 </code><code>IF tp.object.type === &#39;Quoted&#39; &amp;&amp; tp.object contains variables
 </code><code>  o_filter = tp.object
 </code><code>  tp.object = new Variable()
@@ -547,7 +571,7 @@ Furthermore, it allows a <em>depth</em> parameter to be specified, which defines
 For instance, a depth value of 1 generates quoted triples in the form of <code>?person :says &lt;&lt; :Violets :haveColor ?color &gt;&gt;</code>,
 while a depth value of 3 generated quoted triples in the form of <code>?person :says &lt;&lt; ?person :says &lt;&lt; ?person :says &lt;&lt; :Violets :haveColor ?color &gt;&gt; &gt;&gt; &gt;&gt;</code>.</p>
 
-        <p>For our experiments, we range the dataset from 1.000 to 1.000.000,
+        <p>For our experiments, we range the dataset from 1.000 to 1.000.000 triples,
 with the depth ranging from 1 to 5.
 For each combination, we measure the performance of the four indexing approaches in terms of the following metrics:</p>
 
@@ -567,7 +591,7 @@ For each combination, we measure the performance of the four indexing approaches
 
         <p>The four indexing approaches were configured with three indexes (<code>SPO</code>, <code>POS</code>, <code>OSP</code>),
 and the indexed quoted triples dictionary was also configured with these three indexes.
-All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB or RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
+All experiments were executed on a MacBook Pro 13-inch, 2020 with 16GB of RAM and a 2,3 GHz Quad-Core Intel Core i7 processor.
 Our experimental setup is fully reproducible, and is available together with the raw results at
 <a href="https://github.com/rubensworks/experiments-indexing-quoted-triples">https:/​/​github.com/rubensworks/experiments-indexing-quoted-triples</a>.</p>
 
@@ -579,6 +603,19 @@ for the different indexing approaches.
 respectively show the query execution times for low, medium, and high selectivity queries.
 We omit results for quoted triple depths that do not provide additional insights aside from the highest and lowest values.
 To show an overview of all storage sizes, all figures are logarithmic in both axes.</p>
+
+        <p>The labels inside each figure map to the indexing approaches as follows:</p>
+
+        <dl>
+          <dt><a href="#singular-dictionary">Singular Dictionary</a></dt>
+          <dd><code>singular</code></dd>
+          <dt><a href="#quoted-triples-dictionary">Quoted Triples Dictionary</a></dt>
+          <dd><code>quoted</code></dd>
+          <dt><a href="#referential-quoted-triples-dictionary">Referential Quoted Triples Dictionary</a></dt>
+          <dd><code>quoted-ref</code></dd>
+          <dt><a href="#indexed-quoted-triples-dictionary">Indexed Quoted Triples Dictionary</a></dt>
+          <dd><code>quoted-idx</code></dd>
+        </dl>
 
         <figure id="figure-results-ingest-size" class="results-sidebyside">
 
@@ -736,6 +773,8 @@ the singular dictionary and referential quoted triples dictionary approaches per
 The quoted triples dictionary and indexed quoted triples dictionary approaches on the other hand require significantly more memory.
 Contrary to what we hypothesized in <a href="#approaches">Section 5</a>, the storage overhead of the singular dictionary for terms inside quoted triples
 is less significant than expected, and the gains from the removal of storage redundancy with the referential quoted triples dictionary are minimal.
+This is due to the <a href="https://www.zhenghao.io/posts/javascript-memory"><em>string interning</em></a> memory optimization that is used by Node.js,
+whereby multiple equal string instances are only stored once in memory.
 The indexed quoted triples dictionary approach results in a significantly higher storage size due to the three indexes that are used to index quoted triples.</p>
 
         <h4 id="ingestion-time">Ingestion time</h4>
@@ -766,7 +805,7 @@ when fetching a single result becomes more apparent.</p>
         <p>In this article, we discussed four approaches for the in-memory indexing of quoted triples,
 ranging from very naive to highly optimized for quoted triple pattern access.</p>
 
-        <p>Our results show that the indexed quoted triples dictionary approach is orders of magnitude faster than other indexing approaches.
+        <p>Our results show that the indexed quoted triples dictionary approach is on average orders of magnitude faster than other indexing approaches.
 In the most extreme case, this approach is over 4.000 to 11.000 times faster than other indexing approaches
 for a dataset size of 1 million with quoted triples at depth 5.
 For smaller dataset sizes, lower quoted triple depths, and other types of queries, the difference becomes smaller.
@@ -781,9 +820,9 @@ there is no significant overhead of using such a dictionary by default in triple
 even if is unknown before ingestion starts if quoted triples are present in the datasets.</p>
 
         <p>In future work, there is a need to evaluate the performance of different indexing approaches over real-world data,
-as we only evaluated performance over artifically generated datasets, which do not capture real-world properties <span class="references">[<a href="#ref-21">21</a>]</span>.
+as we only evaluated performance over artifically generated datasets, which do not capture real-world properties <span class="references">[<a href="#ref-22">22</a>]</span>.
 Furthermore, we wish to evaluate the performance of these indexes within full SPARQL queries
-by plugging them into <a property="schema:citation http://purl.org/spar/cito/cites" href="https://comunica.github.io/Article-ISWC2018-Resource/">a SPARQL query engine</a> <span class="references">[<a href="#ref-22">22</a>]</span>.</p>
+by plugging them into <a property="schema:citation http://purl.org/spar/cito/cites" href="https://comunica.github.io/Article-ISWC2018-Resource/">a SPARQL query engine</a> <span class="references">[<a href="#ref-23">23</a>]</span>.</p>
 
         <p>In conclusion, the outcomes of this work show that the inclusion of the concept of quoted triples into the RDF and SPARQL recommendations
 necessitates changes in triplestores in terms of indexing and dictionary encoding,
@@ -799,7 +838,7 @@ while not requiring overly complicated additions implementation-wise.</p>
 <h2 id="references">References</h2>
 <dl class="references">
   <dt id="ref-1">[1]</dt>
-  <dd resource="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/" typeof="schema:CreativeWork">Cyganiak, R., Wood, D., Lanthaler, M.: \rdf 1.1: Concepts and Abstract Syntax. W3C, <a href="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">http:/​/​www.w3.org/TR/2014/REC-rdf11-concepts-20140225/</a> (2014).</dd>
+  <dd resource="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/" typeof="schema:CreativeWork">Cyganiak, R., Wood, D., Lanthaler, M.: RDF 1.1: Concepts and Abstract Syntax. W3C, <a href="http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/">http:/​/​www.w3.org/TR/2014/REC-rdf11-concepts-20140225/</a> (2014).</dd>
   <dt id="ref-2">[2]</dt>
   <dd resource="#propertygraphs" typeof="schema:Article">Rodriguez, M.A., Neubauer, P.: Constructions from dots and lines. arXiv preprint arXiv:1006.2361. (2010).</dd>
   <dt id="ref-3">[3]</dt>
@@ -807,7 +846,7 @@ while not requiring overly complicated additions implementation-wise.</p>
   <dt id="ref-4">[4]</dt>
   <dd resource="#rdfstar" typeof="schema:Article">Hartig, O.: Foundations of RDF* and SPARQL*:(An alternative approach to statement-level metadata in RDF). In: AMW 2017 11th Alberto Mendelzon International Workshop on Foundations of Data Management and the Web, Montevideo, Uruguay, June 7-9, 2017. Juan Reutter, Divesh Srivastava (2017).</dd>
   <dt id="ref-5">[5]</dt>
-  <dd resource="https://www.w3.org/2021/12/rdf-star.html" typeof="schema:CreativeWork">\RDF-star and SPARQL-star. W3C, <a href="https://www.w3.org/2021/12/rdf-star.html">https:/​/​www.w3.org/2021/12/rdf-star.html</a> (2021).</dd>
+  <dd resource="https://www.w3.org/2021/12/rdf-star.html" typeof="schema:CreativeWork">Hartig, O., Champin, P.-A., Kellogg, G., Seaborne, A.: RDF-star and SPARQL-star. W3C, <a href="https://www.w3.org/2021/12/rdf-star.html">https:/​/​www.w3.org/2021/12/rdf-star.html</a> (2021).</dd>
   <dt id="ref-6">[6]</dt>
   <dd resource="#kasenchak2021use" typeof="schema:Article">Kasenchak, B., Lehnert, A., Loh, G.: Use case: ontologies and RDF-star for knowledge management. In: The Semantic Web: ESWC 2021 Satellite Events: Virtual Event, June 6–10, 2021, Revised Selected Papers 18. pp. 254–260. Springer (2021).</dd>
   <dt id="ref-7">[7]</dt>
@@ -837,10 +876,12 @@ while not requiring overly complicated additions implementation-wise.</p>
   <dt id="ref-19">[19]</dt>
   <dd resource="#dsparq" typeof="schema:Article">Wallgrün, J.O., Frommberger, L., Wolter, D., Dylla, F., Freksa, C.: Qualitative spatial representation and reasoning in the SparQ-toolbox. In: International Conference on Spatial Cognition. pp. 39–58. Springer (2006).</dd>
   <dt id="ref-20">[20]</dt>
-  <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
+  <dd resource="#differentorders" typeof="schema:Article">Harth, A., Decker, S.: Optimized index structures for querying rdf from the web. In: Third Latin American Web Congress (LA-WEB’2005). pp. 10–pp. IEEE (2005).</dd>
   <dt id="ref-21">[21]</dt>
-  <dd resource="#duan2011apples" typeof="schema:Article">Duan, S., Kementsietsidis, A., Srinivas, K., Udrea, O.: Apples and oranges: a comparison of RDF benchmarks and real RDF datasets. In: Proceedings of the 2011 ACM SIGMOD International Conference on Management of data. pp. 145–156 (2011).</dd>
+  <dd resource="https://rdfostrich.github.io/article-jws2018-ostrich/" typeof="schema:Article">Taelman, R., Vander Sande, M., Van Herwegen, J., Mannens, E., Verborgh, R.: Triple Storage for Random-Access Versioned Querying of RDF Archives. Journal of Web Semantics. (2018).</dd>
   <dt id="ref-22">[22]</dt>
+  <dd resource="#duan2011apples" typeof="schema:Article">Duan, S., Kementsietsidis, A., Srinivas, K., Udrea, O.: Apples and oranges: a comparison of RDF benchmarks and real RDF datasets. In: Proceedings of the 2011 ACM SIGMOD International Conference on Management of data. pp. 145–156 (2011).</dd>
+  <dt id="ref-23">[23]</dt>
   <dd resource="https://comunica.github.io/Article-ISWC2018-Resource/" typeof="schema:Article">Taelman, R., Van Herwegen, J., Vander Sande, M., Verborgh, R.: Comunica: a Modular SPARQL Query Engine for the Web. In: Proceedings of the 17th International Semantic Web Conference (2018).</dd>
 </dl>
 </section>

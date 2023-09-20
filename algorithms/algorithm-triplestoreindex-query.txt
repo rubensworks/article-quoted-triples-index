@@ -6,6 +6,7 @@ FUNCTION QueryIndex(idx, dict, tp)
   OUTPUT:
     ts: sequence of triples
 tpe = dict.encode(tp);
+ts = [];
 FOR subject IN QueryIndexComponent(idx, dict, tpe.subject])
   indx_s = idx[subject]
   FOR predicate IN QueryIndexComponent(indx_s, dict, tpe.predicate])
@@ -16,5 +17,4 @@ FOR subject IN QueryIndexComponent(idx, dict, tpe.subject])
     END
   END
 END
-ts = 
 RETURN ts

@@ -5,5 +5,5 @@ FUNCTION QueryStore(store, tp)
   OUTPUT:
     ts: sequence of triples
 idx = most suitable index from store.indexes
-ts = QueryTriplePatternIndex(idx, store.dict, tp)
+ts = QueryIndex(idx, store.dict, tp)
 RETURN ts
